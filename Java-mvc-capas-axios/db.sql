@@ -26,19 +26,11 @@ CREATE TABLE productos (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(120) NOT NULL,
     tipo VARCHAR(10) NOT NULL,
-    descripcion_corta VARCHAR(200) NOT NULL,
-    riesgo VARCHAR(10) NOT NULL,
-    costo NUMERIC(12,2) NOT NULL,
-    rendimiento NUMERIC(5,2),
-    cobertura VARCHAR(200),
-    resumen VARCHAR(500),
-    beneficios VARCHAR(500),
-    exclusiones VARCHAR(500),
-    documento_url VARCHAR(300),
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-    vistas BIGINT NOT NULL DEFAULT 0,
-    comparaciones BIGINT NOT NULL DEFAULT 0,
-    solicitudes_informacion BIGINT NOT NULL DEFAULT 0
+    descripcion VARCHAR(500) NOT NULL,
+    beneficio VARCHAR(500),
+    costo VARCHAR(100),
+    plazo VARCHAR(100),
+    activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE favoritos (
@@ -66,11 +58,11 @@ INSERT INTO usuarios (nombre, login, clave, email, rol) VALUES
     ('Luis Emprendedor', 'luis', '1234', 'luis@conglomerado.com', 'CLIENTE'),
     ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN');
 
-INSERT INTO productos (nombre, tipo, descripcion_corta, riesgo, costo, rendimiento, cobertura, resumen, beneficios, exclusiones, documento_url) VALUES
-    ('Fondo Crecimiento Joven', 'FONDO', 'Fondo mutuo diversificado para primeras inversiones', 'MEDIO', 15.00, 8.5, NULL, 'Inversión inicial baja con re-balanceo automático', 'Acompañamiento digital, aportes automáticos', 'No garantiza rentabilidad anual', 'https://docs.conglomerado.com/fondos/crecimiento_joven.pdf'),
-    ('Fondo Patrimonial Plus', 'FONDO', 'Portafolio conservador para metas familiares', 'BAJO', 25.00, 6.1, NULL, 'Enfoque en preservación de capital', 'Reinversión automática de dividendos', 'Rendimiento sujeto a mercado', 'https://docs.conglomerado.com/fondos/patrimonial_plus.pdf'),
-    ('Seguro Vida Integral', 'SEGURO', 'Cobertura integral de vida y salud para adultos jóvenes', 'BAJO', 42.90, NULL, 'Vida y salud', 'Beneficios en clínicas aliadas + telemedicina', 'Atención médica preferencial, cobertura familiar', 'No cubre enfermedades preexistentes en primeros 12 meses', 'https://docs.conglomerado.com/seguros/vida_integral.pdf'),
-    ('Seguro Autónomos Protegidos', 'SEGURO', 'Cobertura flexible para independientes', 'MEDIO', 58.40, NULL, 'Accidentes y hospitalización', 'Reembolsos rápidos, asistencias 24/7', 'Flexibilidad de pago, cobertura internacional', 'No cubre deportes extremos', 'https://docs.conglomerado.com/seguros/autonomos.pdf');
+INSERT INTO productos (nombre, tipo, descripcion, beneficio, costo, plazo, activo) VALUES
+    ('Fondo Crecimiento Joven', 'FONDO', 'Fondo mutuo diversificado para primeras inversiones con aportes accesibles.', 'Acompañamiento digital y rebalanceo automático.', 'Aporte mensual desde S/ 150', 'Plazo sugerido: 3 a 5 años', TRUE),
+    ('Fondo Patrimonial Plus', 'FONDO', 'Portafolio conservador orientado a metas familiares y preservación de capital.', 'Asesoría personalizada y reinversión de dividendos.', 'Aporte mensual desde S/ 300', 'Plazo sugerido: 5 años a más', TRUE),
+    ('Seguro Vida Integral', 'SEGURO', 'Cobertura integral de vida y salud para adultos jóvenes.', 'Telemedicina, asistencias y cobertura familiar.', 'Prima mensual desde S/ 120', 'Contratación anual renovable', TRUE),
+    ('Seguro Autónomos Protegidos', 'SEGURO', 'Protección flexible para independientes con foco en accidentes.', 'Reembolsos ágiles y asistencias 24/7.', 'Prima mensual desde S/ 160', 'Contratación anual renovable', TRUE);
 
 INSERT INTO favoritos (usuario_id, producto_id) VALUES
     (1, 1),

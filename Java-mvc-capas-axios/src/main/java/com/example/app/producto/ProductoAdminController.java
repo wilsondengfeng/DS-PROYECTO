@@ -1,6 +1,5 @@
 package com.example.app.producto;
 
-import com.example.app.producto.dto.MetricasProductoDTO;
 import com.example.app.producto.dto.ProductoDetalleDTO;
 import com.example.app.producto.dto.ProductoRequestDTO;
 import jakarta.validation.Valid;
@@ -38,10 +37,5 @@ public class ProductoAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void retirar(@PathVariable Long id) {
         adminService.retirar(id);
-    }
-
-    @GetMapping("/{id}/metricas")
-    public MetricasProductoDTO metricas(@PathVariable Long id) {
-        return adminService.metricas(id);
     }
 }

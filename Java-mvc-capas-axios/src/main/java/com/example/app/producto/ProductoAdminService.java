@@ -1,7 +1,6 @@
 package com.example.app.producto;
 
 import com.example.app.common.exception.ResourceNotFoundException;
-import com.example.app.producto.dto.MetricasProductoDTO;
 import com.example.app.producto.dto.ProductoDetalleDTO;
 import com.example.app.producto.dto.ProductoRequestDTO;
 import lombok.RequiredArgsConstructor;
@@ -51,35 +50,17 @@ public class ProductoAdminService {
         productoRepository.save(producto);
     }
 
-    @Transactional(readOnly = true)
-    public MetricasProductoDTO metricas(Long id) {
-        Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-        return new MetricasProductoDTO(
-                producto.getId(),
-                producto.getVistas(),
-                producto.getComparaciones(),
-                producto.getSolicitudesInformacion()
-        );
-    }
-
     private void aplicarCambios(Producto producto, ProductoRequestDTO dto) {
         producto.setNombre(dto.getNombre());
         producto.setTipo(dto.getTipo());
-        producto.setDescripcionCorta(dto.getDescripcionCorta());
-        producto.setRiesgo(dto.getRiesgo());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setBeneficio(dto.getBeneficio());
         producto.setCosto(dto.getCosto());
-        producto.setRendimiento(dto.getRendimiento());
-        producto.setCobertura(dto.getCobertura());
-        producto.setResumen(dto.getResumen());
-        producto.setBeneficios(dto.getBeneficios());
-        producto.setExclusiones(dto.getExclusiones());
-        producto.setDocumentoUrl(dto.getDocumentoUrl());
-        if (producto.getId() == null) {
+        producto.setPlazo(dto.getPlazo());
+        if (dto.getActivo() != null) {
+            producto.setActivo(dto.getActivo());
+        } else if (producto.getId() == null) {
             producto.setActivo(true);
-            producto.setVistas(0);
-            producto.setComparaciones(0);
-            producto.setSolicitudesInformacion(0);
         }
     }
 }

@@ -30,9 +30,6 @@ public class SolicitudInformacionService {
                 .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no disponible"));
 
-        producto.registrarSolicitud();
-        productoRepository.save(producto);
-
         SolicitudInformacion solicitud = new SolicitudInformacion();
         solicitud.setUsuario(usuario);
         solicitud.setProducto(producto);

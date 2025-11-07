@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -20,12 +19,10 @@ public class ClienteCatalogoController {
     private final ProductoService productoService;
 
     @GetMapping
-    public List<ProductoResumenDTO> catalogo(@RequestParam(required = false) TipoProducto tipo,
-                                             @RequestParam(required = false) NivelRiesgo riesgo,
-                                             @RequestParam(required = false) BigDecimal costoMax,
-                                             @RequestParam(required = false) BigDecimal rendimientoMin,
-                                             @RequestParam(required = false) String cobertura) {
-        return productoService.buscarCatalogo(tipo, riesgo, costoMax, rendimientoMin, cobertura);
+    public List<ProductoResumenDTO> catalogo(@RequestParam TipoProducto tipo,
+                                             @RequestParam(required = false) String texto,
+                                             @RequestParam(defaultValue = "true") boolean soloActivos) {
+        return productoService.buscarCatalogo(tipo, texto, soloActivos);
     }
 
     @GetMapping("/{id}")

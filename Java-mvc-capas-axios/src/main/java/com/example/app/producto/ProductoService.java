@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,24 +19,21 @@ public class ProductoService {
 
     @Transactional(readOnly = true)
     public List<ProductoResumenDTO> buscarCatalogo(TipoProducto tipo,
-                                                   NivelRiesgo riesgo,
-                                                   BigDecimal costoMax,
-                                                   BigDecimal rendimientoMin,
-                                                   String cobertura) {
+                                                   String texto,
+                                                   boolean soloActivos) {
         return productoRepository
-                .filtrarCatalogo(tipo, riesgo, costoMax, rendimientoMin, cobertura)
+                .buscarCatalogo(tipo, soloActivos, texto)
                 .stream()
                 .map(this::toResumen)
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductoDetalleDTO obtenerDetalle(Long id) {
         Producto producto = productoRepository.findById(id)
                 .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-        producto.registrarVista();
-        return toDetalle(productoRepository.save(producto));
+        return toDetalle(producto);
     }
 
     @Transactional
@@ -49,8 +45,10 @@ public class ProductoService {
         if (productos.size() != ids.size() || productos.stream().anyMatch(p -> !p.isActivo())) {
             throw new ResourceNotFoundException("Algún producto no existe o fue retirado");
         }
-        productos.stream().filter(Producto::isActivo).forEach(Producto::registrarComparacion);
-        productoRepository.saveAll(productos);
+        TipoProducto tipo = productos.get(0).getTipo();
+        if (productos.stream().anyMatch(p -> p.getTipo() != tipo)) {
+            throw new IllegalArgumentException("Solo se pueden comparar productos del mismo tipo");
+        }
         return productos.stream().map(this::toDetalle).collect(Collectors.toList());
     }
 
@@ -59,12 +57,11 @@ public class ProductoService {
                 .id(producto.getId())
                 .nombre(producto.getNombre())
                 .tipo(producto.getTipo())
-                .riesgo(producto.getRiesgo())
+                .descripcion(producto.getDescripcion())
+                .beneficio(producto.getBeneficio())
                 .costo(producto.getCosto())
-                .rendimiento(producto.getRendimiento())
-                .cobertura(producto.getCobertura())
-                .resumen(producto.getResumen())
-                .documentoUrl(producto.getDocumentoUrl())
+                .plazo(producto.getPlazo())
+                .activo(producto.isActivo())
                 .build();
     }
 
@@ -73,19 +70,11 @@ public class ProductoService {
                 .id(producto.getId())
                 .nombre(producto.getNombre())
                 .tipo(producto.getTipo())
-                .descripcionCorta(producto.getDescripcionCorta())
-                .riesgo(producto.getRiesgo())
+                .descripcion(producto.getDescripcion())
+                .beneficio(producto.getBeneficio())
                 .costo(producto.getCosto())
-                .rendimiento(producto.getRendimiento())
-                .cobertura(producto.getCobertura())
-                .resumen(producto.getResumen())
-                .beneficios(producto.getBeneficios())
-                .exclusiones(producto.getExclusiones())
-                .documentoUrl(producto.getDocumentoUrl())
+                .plazo(producto.getPlazo())
                 .activo(producto.isActivo())
-                .vistas(producto.getVistas())
-                .comparaciones(producto.getComparaciones())
-                .solicitudesInformacion(producto.getSolicitudesInformacion())
                 .build();
     }
 }
