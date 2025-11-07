@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cliente - Conglomerado Financiero Wilson y Carlos SAC</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content modal-login">
+      <h2>🔐 Iniciar Sesión</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" placeholder="Ingresa tu usuario" required/>
+        </div>
+        <div class="form-group">
+          <label for="clave">Contraseña</label>
+          <input type="password" id="clave" placeholder="Ingresa tu contraseña" required/>
+        </div>
+        <div id="loginError" class="error-message" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:15px;">
+          Iniciar Sesión
+        </button>
+      </form>
+      <p style="text-align:center; margin-top:20px;">
+        <a href="index.html" style="color:var(--primary-color);">← Volver al inicio</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Main App (hidden until login) -->
+  <div id="mainApp" style="display:none;">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="container">
+        <div class="header-content">
+          <h1>💰 Conglomerado Financiero Wilson y Carlos SAC</h1>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Productos contratados -->
+      <div class="card contratados-card">
+        <div class="contratados-header">
+          <div>
+            <h2>Mis productos contratados</h2>
+            <p>Revisa los servicios que ya tienes activos antes de explorar nuevas opciones.</p>
+          </div>
+          <button class="btn btn-primary" onclick="contratarProducto()">Contratar producto</button>
+        </div>
+        <div id="contratados-container" class="productos-grid"></div>
+      </div>
+
+      <!-- Pestañas -->
+      <div class="tabs-container">
+        <button class="tab-button active" onclick="cambiarPestaña('fondos')" id="tab-fondos">
+          💰 Fondos de Inversión
+        </button>
+        <button class="tab-button" onclick="cambiarPestaña('seguros')" id="tab-seguros">
+          🛡️ Seguros
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card" id="catalogo-card">
+        <h2>🔍 Buscar y Filtrar Productos</h2>
+        <div class="form-row">
+          <div class="form-group" style="display:none;">
+            <label for="filtroTipo">Tipo de Producto</label>
+            <select id="filtroTipo">
+              <option value="FONDO">Fondo</option>
+              <option value="SEGURO">Seguro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filtroBusqueda">Buscar</label>
+            <input type="text" id="filtroBusqueda" placeholder="Nombre, descripción o beneficio"/>
+          </div>
+          <div class="form-group checkbox-group">
+            <label for="filtroSoloActivos">Solo disponibles</label>
+            <input type="checkbox" id="filtroSoloActivos" checked />
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Buscar</button>
+          <button class="btn btn-secondary" onclick="limpiarFiltros()">Limpiar</button>
+          <button class="btn btn-secondary" onclick="mostrarComparacion()">⚖️ Comparar Seleccionados</button>
+          <button class="btn btn-secondary" onclick="mostrarTodosFondos()">Mostrar todo</button>
+        </div>
+      </div>
+
+      <!-- Catálogo de Productos -->
+      <div class="card">
+        <h2 id="titulo-catalogo">📋 Catálogo de Fondos de Inversión</h2>
+        <div id="loading" class="loading" style="display:none;">Cargando productos...</div>
+        <div id="error-message" class="error-message" style="display:none;"></div>
+        <div id="productos-container"></div>
+      </div>
+    </div>
+
+    <!-- Modal de Detalle de Producto -->
+    <div id="productoModal" class="modal">
+      <div class="modal-content modal-large">
+        <span class="close-modal" onclick="cerrarModalProducto()">&times;</span>
+        <div id="productoDetalle"></div>
+      </div>
+    </div>
+
+    <!-- Modal de Comparación -->
+    <div id="comparacionModal" class="modal">
+      <div class="modal-content modal-large">
+        <span class="close-modal" onclick="cerrarModalComparacion()">&times;</span>
+        <h2>⚖️ Comparación de Productos</h2>
+        <div id="comparacionContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="cliente.js"></script>
+</body>
+</html>
+

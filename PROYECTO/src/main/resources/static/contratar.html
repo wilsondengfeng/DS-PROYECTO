@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contratar producto - Conglomerado Financiero</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="home-page">
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>📝 Contratar un producto</h1>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="cliente.html">← Volver al panel</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container contratar-container">
+    <section class="card">
+      <h2>Pasos para contratar</h2>
+      <p>1. Revisa los productos disponibles en la lista inferior.</p>
+      <p>2. Selecciona el producto para ver su resumen.</p>
+      <p>3. Confirma la contratación cuando estés seguro.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>Resumen del producto seleccionado</h2>
+      </div>
+      <div id="contratar-resumen" class="contratar-resumen">
+        <p class="text-muted">Aún no seleccionas ningún producto. Elige uno de la lista para ver sus detalles.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>Catálogo disponible</h2>
+        <div class="header-line"></div>
+      </div>
+      <div class="contratar-lista" id="contratar-lista"></div>
+    </section>
+  </main>
+
+  <script src="contratar.js"></script>
+</body>
+</html>

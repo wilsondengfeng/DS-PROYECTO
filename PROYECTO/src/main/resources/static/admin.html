@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Administrador - Conglomerado Financiero Wilson y Carlos SAC</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content modal-login">
+      <h2>🔐 Iniciar Sesión - Administrador</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" placeholder="Ingresa tu usuario" required/>
+        </div>
+        <div class="form-group">
+          <label for="clave">Contraseña</label>
+          <input type="password" id="clave" placeholder="Ingresa tu contraseña" required/>
+        </div>
+        <div id="loginError" class="error-message" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:15px;">
+          Iniciar Sesión
+        </button>
+      </form>
+      <p style="text-align:center; margin-top:20px;">
+        <a href="index.html" style="color:var(--primary-color);">← Volver al inicio</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Main App (hidden until login) -->
+  <div id="mainApp" style="display:none;">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="container">
+        <div class="header-content">
+          <h1>⚙️ Panel de Administración</h1>
+          <div class="header-actions">
+            <a class="btn btn-secondary" href="contratos-admin.html">📑 Ver Contratos</a>
+            <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Formulario Crear/Editar Producto -->
+      <div class="card">
+        <h2 id="form-title">➕ Agregar Nuevo Producto</h2>
+        <form id="producto-form">
+          <input type="hidden" id="producto-id"/>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre del Producto *</label>
+              <input type="text" id="nombre" placeholder="Ej: Fondo Crecimiento Joven" required maxlength="120"/>
+            </div>
+            <div class="form-group">
+              <label for="tipo">Tipo *</label>
+              <select id="tipo" required>
+                <option value="">Selecciona...</option>
+                <option value="FONDO">Fondo</option>
+                <option value="SEGURO">Seguro</option>
+              </select>
+            </div>
+            <div class="form-group" id="campo-riesgo" style="display:none;">
+              <label for="riesgo">Nivel de Riesgo</label>
+              <select id="riesgo">
+                <option value="">Selecciona...</option>
+                <option value="BAJO">Bajo</option>
+                <option value="MEDIO">Medio</option>
+                <option value="ALTO">Alto</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">Descripción *</label>
+            <textarea id="descripcion" rows="3" placeholder="Describe el producto" required maxlength="500"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="beneficio">Beneficio principal</label>
+            <textarea id="beneficio" rows="3" placeholder="Beneficio destacado del producto" maxlength="500"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="costo">Costo (texto libre)</label>
+              <input type="text" id="costo" placeholder="Ej: Aporte mensual desde S/ 150" maxlength="100"/>
+            </div>
+            <div class="form-group">
+              <label for="plazo">Plazo</label>
+              <input type="text" id="plazo" placeholder="Ej: Plazo sugerido: 3 a 5 años" maxlength="100"/>
+            </div>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" id="activo" checked />
+              Producto activo
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              <span id="btn-text">💾 Guardar Producto</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel" onclick="cancelarEdicion()">
+              ❌ Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Productos -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2>📋 Productos Registrados</h2>
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="incluirInactivos" onchange="cargarProductos()">
+            <span>Incluir productos inactivos</span>
+          </label>
+        </div>
+        <div id="loading" class="loading" style="display:none;">Cargando productos...</div>
+        <div id="error-message" class="error-message" style="display:none;"></div>
+        <div id="productos-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
+

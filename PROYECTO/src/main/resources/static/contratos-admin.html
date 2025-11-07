@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contratos - Panel Admin</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="home-page">
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>Contratos de Clientes</h1>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="admin.html">Volver al Panel</a>
+          <button class="btn btn-secondary" onclick="cerrarSesionAdmin()">Cerrar Sesion</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Resumen de contratos</h2>
+        <span id="contador-contratos" class="text-muted"></span>
+      </div>
+      <div id="contratos-loading" class="loading">Cargando contratos...</div>
+      <div id="contratos-error" class="error-message" style="display:none;"></div>
+      <div id="contratos-container"></div>
+    </div>
+  </main>
+
+  <script src="contratos-admin.js"></script>
+</body>
+</html>

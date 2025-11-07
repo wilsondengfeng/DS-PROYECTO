@@ -1,2 +1,29 @@
-.idea
-.vscode
+# IDE settings
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Build output
+target/
+*/target/
+build/
+*/build/
+out/
+*/out/
+
+# Maven wrapper artifacts
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
