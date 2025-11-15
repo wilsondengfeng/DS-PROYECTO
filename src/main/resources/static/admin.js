@@ -4,8 +4,9 @@
 // ============================================
 
 // ===== CONFIGURACIÓN =====
-const API_AUTH = 'http://localhost:8080/api/auth';
-const API_PRODUCTOS = 'http://localhost:8080/api/admin/productos';
+const API_BASE = window.location.origin;
+const API_AUTH = `${API_BASE}/api/auth`;
+const API_PRODUCTOS = `${API_BASE}/api/admin/productos`;
 
 let usuarioActual = null;
 

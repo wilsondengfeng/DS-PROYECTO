@@ -4,10 +4,11 @@
 // ============================================
 
 // ===== CONFIGURACIÓN =====
-const API_AUTH = 'http://localhost:8080/api/auth';
-const API_PRODUCTOS = 'http://localhost:8080/api/clientes/productos';
-const API_CONTRATOS = (clienteId) => `http://localhost:8080/api/clientes/${clienteId}/contratos`;
-const API_SOLICITUDES = (clienteId) => `http://localhost:8080/api/clientes/${clienteId}/solicitudes`;
+const API_BASE = window.location.origin;
+const API_AUTH = `${API_BASE}/api/auth`;
+const API_PRODUCTOS = `${API_BASE}/api/clientes/productos`;
+const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/contratos`;
+const API_SOLICITUDES = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/solicitudes`;
 
 let usuarioActual = null;
 let productosSeleccionados = new Set();
@@ -490,6 +491,10 @@ function renderProductosContratados() {
             <div class="detail-value">${escapeHtml(prod.costo || 'No especificado')}</div>
           </div>
           <div class="detail-item">
+            <div class="detail-label">Monto invertido</div>
+            <div class="detail-value">${formatearMontoContratado(prod.montoInvertido, prod.costo)}</div>
+          </div>
+          <div class="detail-item">
             <div class="detail-label">Beneficio</div>
             <div class="detail-value">${escapeHtml(beneficio)}</div>
           </div>
@@ -538,6 +543,21 @@ function mostrarError(mensaje) {
 
 function ocultarError() {
   document.getElementById('error-message').style.display = 'none';
+}
+
+function formatearMontoContratado(monto, referenciaMoneda = '') {
+  if (monto === null || monto === undefined) {
+    return 'Sin registro';
+  }
+  const texto = (referenciaMoneda || '').toLowerCase();
+  const normalizada = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const esDolar = texto.includes('usd') || normalizada.includes('dolar');
+  const simbolo = esDolar ? '$' : 'S/';
+  const numero = Number(monto);
+  if (Number.isNaN(numero)) {
+    return `${simbolo}0.00`;
+  }
+  return `${simbolo}${numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function escapeHtml(text) {

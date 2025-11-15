@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +32,12 @@ public class ContratoService {
     public List<ProductoResumenDTO> listar(Long usuarioId) {
         validarCliente(usuarioId);
         return contratoRepository.findByUsuarioId(usuarioId).stream()
-                .map(Contrato::getProducto)
-                .filter(Producto::isActivo)
-                .map(productoService::toResumen)
+                .filter(contrato -> contrato.getProducto().isActivo())
+                .map(contrato -> {
+                    ProductoResumenDTO dto = productoService.toResumen(contrato.getProducto());
+                    dto.setMontoInvertido(contrato.getMontoInvertido());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -48,23 +54,28 @@ public class ContratoService {
                         .tipo(contrato.getProducto().getTipo().name())
                         .riesgo(contrato.getProducto().getRiesgo())
                         .costo(contrato.getProducto().getCosto())
+                        .montoInvertido(contrato.getMontoInvertido())
                         .creadoEn(contrato.getCreadoEn())
                         .build())
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public void contratar(Long usuarioId, Long productoId) {
+    public void contratar(Long usuarioId, Long productoId, BigDecimal montoInvertido) {
         Usuario usuario = validarCliente(usuarioId);
         Producto producto = productoRepository.findById(productoId)
                 .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no disponible"));
-        if (contratoRepository.existsByUsuarioIdAndProductoId(usuarioId, productoId)) {
+        BigDecimal montoNormalizado = normalizarMonto(montoInvertido);
+        Optional<Contrato> contratoExistente = contratoRepository.findByUsuarioIdAndProductoId(usuarioId, productoId);
+        if (contratoExistente.isPresent()) {
+            contratoExistente.get().setMontoInvertido(montoNormalizado);
             return;
         }
         Contrato contrato = new Contrato();
         contrato.setUsuario(usuario);
         contrato.setProducto(producto);
+        contrato.setMontoInvertido(montoNormalizado);
         contratoRepository.save(contrato);
     }
 
@@ -87,5 +98,16 @@ public class ContratoService {
             throw new IllegalArgumentException("El usuario no es un cliente");
         }
         return usuario;
+    }
+
+    private BigDecimal normalizarMonto(BigDecimal monto) {
+        if (monto == null) {
+            throw new IllegalArgumentException("Debes indicar un monto a invertir");
+        }
+        BigDecimal montoNormalizado = monto.setScale(2, RoundingMode.HALF_UP);
+        if (montoNormalizado.compareTo(BigDecimal.valueOf(100)) < 0) {
+            throw new IllegalArgumentException("El monto minimo de inversion es 100.00");
+        }
+        return montoNormalizado;
     }
 }

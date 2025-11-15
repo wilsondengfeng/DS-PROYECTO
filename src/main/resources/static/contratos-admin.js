@@ -1,4 +1,5 @@
-const API_ADMIN_CONTRATOS = 'http://localhost:8080/api/admin/contratos';
+﻿const API_BASE = window.location.origin;
+const API_ADMIN_CONTRATOS = `${API_BASE}/api/admin/contratos`;
 
 let usuarioAdmin = null;
 
@@ -30,7 +31,7 @@ async function cargarContratos() {
         <div class="empty-state">
           <div class="empty-state-icon">??</div>
           <h3>No hay contratos registrados</h3>
-          <p>A�n no hay clientes con productos contratados.</p>
+          <p>Aún no hay clientes con productos contratados.</p>
         </div>`;
       return;
     }
@@ -50,6 +51,7 @@ async function cargarContratos() {
         <div class="producto-descripcion">
           <p><strong>Cliente:</strong> ${escapeHtml(contrato.usuarioNombre)} (${escapeHtml(contrato.usuarioEmail)})</p>
           <p><strong>Costo:</strong> ${escapeHtml(contrato.costo || 'No especificado')}</p>
+          <p><strong>Monto contratado:</strong> ${formatearMonto(contrato.montoInvertido, contrato.costo)}</p>
         </div>
       </div>
     `).join('');
@@ -67,6 +69,21 @@ async function cargarContratos() {
 function cerrarSesionAdmin() {
   localStorage.removeItem('usuarioAdmin');
   window.location.href = 'admin.html';
+}
+
+function formatearMonto(monto, referencia = '') {
+  if (monto === null || monto === undefined) {
+    return 'Sin registro';
+  }
+  const texto = (referencia || '').toLowerCase();
+  const normalizada = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const esDolar = texto.includes('usd') || normalizada.includes('dolar');
+  const simbolo = esDolar ? '$' : 'S/';
+  const numero = Number(monto);
+  if (Number.isNaN(numero)) {
+    return `${simbolo}0.00`;
+  }
+  return `${simbolo}${numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function escapeHtml(text) {

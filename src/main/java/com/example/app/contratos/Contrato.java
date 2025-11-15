@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,6 +26,9 @@ public class Contrato {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id")
     private Producto producto;
+
+    @Column(name = "monto_invertido", nullable = false, precision = 15, scale = 2)
+    private BigDecimal montoInvertido;
 
     @Column(nullable = false)
     private LocalDateTime creadoEn = LocalDateTime.now();

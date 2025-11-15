@@ -3,6 +3,8 @@ package com.example.app.producto.dto;
 import com.example.app.producto.TipoProducto;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class ProductoResumenDTO {
     private Long id;
@@ -15,4 +17,5 @@ public class ProductoResumenDTO {
     private String costo;
     private String plazo;
     private boolean activo;
+    private BigDecimal montoInvertido;
 }

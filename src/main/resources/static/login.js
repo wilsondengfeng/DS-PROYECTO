@@ -1,4 +1,5 @@
-const API_AUTH = 'http://localhost:8080/api/auth';
+const API_BASE = window.location.origin;
+const API_AUTH = `${API_BASE}/api/auth`;
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-login').addEventListener('click', login);

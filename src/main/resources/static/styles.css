@@ -41,11 +41,73 @@ body.home-page {
     min-height: 100vh;
 }
 
-/* Hero Section */
+.site-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.site-branding {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.brand-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.brand-copy .brand-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.brand-copy .brand-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+}
+
+.site-header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.header-btn {
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.btn-outline {
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    color: #fff;
+    background: transparent;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+  /* Hero Section */
 .hero-section {
     background:
-        linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(30, 64, 175, 0.8)),
-        url('https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1600&q=80');
+        linear-gradient(135deg, rgba(8, 11, 40, 0.85), rgba(19, 78, 74, 0.85)),
+        url('img/STONKS.jpg');
     background-size: cover;
     background-position: center;
     padding: 80px 20px;
@@ -104,6 +166,35 @@ body.home-page {
     color: rgba(255, 255, 255, 0.85);
     margin-top: 1.5rem;
     font-weight: 600;
+}
+
+.hero-highlights {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.hero-highlight-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 12px 20px;
+    border-radius: 14px;
+    min-width: 200px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+}
+
+.highlight-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.highlight-value {
+    font-size: 1.4rem;
+    font-weight: 700;
 }
 
 .hero-actions {
@@ -497,6 +588,21 @@ main.container > .cta-section {
 @media (max-width: 768px) {
     main.container > section {
         padding: 40px 20px;
+    }
+
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .site-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .hero-highlights {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .hero-title {

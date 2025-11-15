@@ -1,5 +1,6 @@
 package com.example.app.contratos;
 
+import com.example.app.contratos.dto.ContratoSolicitudDTO;
 import com.example.app.producto.dto.ProductoResumenDTO;
 import com.example.app.solicitudes.SolicitudInformacionService;
 import com.example.app.solicitudes.dto.SolicitudInformacionRequestDTO;
@@ -26,8 +27,10 @@ public class ClienteContratosController {
 
     @PostMapping("/contratos/{productoId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void contratar(@PathVariable Long clienteId, @PathVariable Long productoId) {
-        contratoService.contratar(clienteId, productoId);
+    public void contratar(@PathVariable Long clienteId,
+                          @PathVariable Long productoId,
+                          @Valid @RequestBody ContratoSolicitudDTO solicitud) {
+        contratoService.contratar(clienteId, productoId, solicitud.getMonto());
     }
 
     @DeleteMapping("/contratos/{productoId}")

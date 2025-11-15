@@ -3,6 +3,7 @@ package com.example.app.contratos.dto;
 import lombok.Builder;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Value
@@ -17,5 +18,6 @@ public class ContratoAdminDTO {
     String tipo;
     String riesgo;
     String costo;
+    BigDecimal montoInvertido;
     LocalDateTime creadoEn;
 }

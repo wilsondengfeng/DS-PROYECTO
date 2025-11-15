@@ -1,9 +1,18 @@
-const API_PRODUCTOS = 'http://localhost:8080/api/clientes/productos';
-const API_CONTRATOS = (clienteId) => `http://localhost:8080/api/clientes/${clienteId}/contratos`;
+const API_BASE = window.location.origin;
+const API_PRODUCTOS = `${API_BASE}/api/clientes/productos`;
+const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/contratos`;
 
 let usuarioActual = null;
 let productosDisponibles = [];
 let productoSeleccionado = null;
+let configuracionMontoActual = null;
+
+const GUIA_MONTO = {
+  BAJO: { min: 500, sugerido: 3000 },
+  MEDIO: { min: 2000, sugerido: 6000 },
+  ALTO: { min: 5000, sugerido: 12000 },
+  DEFAULT: { min: 300, sugerido: 1500 }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   verificarSesionContratar();
@@ -96,9 +105,18 @@ async function seleccionarProducto(productoId) {
 function renderResumenSeleccion() {
   const contenedor = document.getElementById('contratar-resumen');
   if (!productoSeleccionado) {
+    configuracionMontoActual = null;
     contenedor.innerHTML = '<p class="text-muted">Selecciona un producto para ver su resumen.</p>';
     return;
   }
+
+  const configMonto = construirConfiguracionMonto(productoSeleccionado);
+  configuracionMontoActual = configMonto;
+  const sugerenciasHTML = configMonto.sugerencias.map(valor => `
+      <button type="button" class="btn btn-secondary btn-sugerencia" onclick="seleccionarMontoSugerido(${valor})">
+        ${configMonto.simbolo}${formatearNumero(valor)}
+      </button>
+    `).join('');
 
   contenedor.innerHTML = `
     <h3>${escapeHtml(productoSeleccionado.nombre)}</h3>
@@ -108,6 +126,19 @@ function renderResumenSeleccion() {
     <p><strong>Costo:</strong> ${escapeHtml(productoSeleccionado.costo || 'No especificado')}</p>
     <p><strong>Beneficio:</strong> ${escapeHtml(productoSeleccionado.beneficio || 'No especificado')}</p>
     <p><strong>Plazo:</strong> ${escapeHtml(productoSeleccionado.plazo || 'No especificado')}</p>
+    <div class="form-group">
+      <label for="montoInversion">¿Cuánto deseas invertir en este fondo? (${configMonto.nombreMoneda})</label>
+      <input
+        type="number"
+        id="montoInversion"
+        min="${configMonto.min}"
+        step="${configMonto.paso}"
+        value="${configMonto.min}"
+        placeholder="${configMonto.placeholder}"
+      />
+      <small class="text-muted">${configMonto.mensaje}</small>
+      <div class="monto-sugerencias">${sugerenciasHTML}</div>
+    </div>
     <div class="detalle-actions">
       <button class="btn btn-success" onclick="confirmarContratacion()">Confirmar contratación</button>
       <a class="btn btn-secondary" href="cliente.html">Cancelar</a>
@@ -117,14 +148,77 @@ function renderResumenSeleccion() {
 
 async function confirmarContratacion() {
   if (!productoSeleccionado || !usuarioActual) return;
+  const inputMonto = document.getElementById('montoInversion');
+  const minimo = configuracionMontoActual?.min || 100;
+  const simboloMoneda = configuracionMontoActual?.simbolo || 'S/';
+  const monto = parseFloat(inputMonto?.value);
+
+  if (!inputMonto || Number.isNaN(monto)) {
+    alert('Ingresa el monto que deseas invertir.');
+    return;
+  }
+
+  if (monto < minimo) {
+    alert(`El monto mínimo recomendado para este fondo es ${simboloMoneda}${formatearNumero(minimo)}.`);
+    inputMonto.focus();
+    return;
+  }
+
+  const montoNormalizado = Math.round(monto * 100) / 100;
+
+  const montoFormateado = new Intl.NumberFormat('es-PE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(montoNormalizado);
+
   try {
-    await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoSeleccionado.id}`);
-    alert('Producto contratado con éxito.');
+    await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoSeleccionado.id}`, { monto: montoNormalizado });
+    alert(`Producto contratado con éxito. Registramos ${simboloMoneda}${montoFormateado} en ${productoSeleccionado.nombre}.`);
     window.location.href = 'cliente.html';
   } catch (error) {
     console.error('Error al contratar producto:', error);
     alert(error.response?.data?.mensaje || 'No se pudo completar la contratación.');
   }
+}
+
+function construirConfiguracionMonto(producto) {
+  const riesgo = (producto.riesgo || 'DEFAULT').toUpperCase();
+  const guia = GUIA_MONTO[riesgo] || GUIA_MONTO.DEFAULT;
+  const moneda = detectarMoneda(producto);
+  const mensaje = `Invierte desde ${moneda.simbolo}${formatearNumero(guia.min)}. Sugerencia: ${moneda.simbolo}${formatearNumero(guia.sugerido)} - ${moneda.simbolo}${formatearNumero(guia.sugerido * 2)}.`;
+
+  return {
+    min: guia.min,
+    paso: moneda.esDolar ? 50 : 100,
+    simbolo: moneda.simbolo,
+    nombreMoneda: moneda.nombre,
+    placeholder: `${moneda.simbolo}${formatearNumero(guia.sugerido)}`,
+    mensaje,
+    sugerencias: [guia.min, guia.sugerido, guia.sugerido * 2]
+  };
+}
+
+function detectarMoneda(producto) {
+  const referencia = `${producto.costo || ''} ${producto.descripcion || ''}`.toLowerCase();
+  const normalizada = referencia.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (referencia.includes('usd') || normalizada.includes('dolar')) {
+    return { simbolo: '$', nombre: 'dólares', esDolar: true };
+  }
+  return { simbolo: 'S/', nombre: 'soles', esDolar: false };
+}
+
+function formatearNumero(valor) {
+  return new Intl.NumberFormat('es-PE', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(Number(valor) || 0);
+}
+
+function seleccionarMontoSugerido(valor) {
+  const input = document.getElementById('montoInversion');
+  if (!input) return;
+  input.value = Number(valor);
+  input.dispatchEvent(new Event('input'));
 }
 
 function escapeHtml(text) {
