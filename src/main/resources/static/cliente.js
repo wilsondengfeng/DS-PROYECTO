@@ -167,6 +167,7 @@ function mostrarProductos(productos) {
           <div class="producto-nombre">${escapeHtml(prod.nombre)}</div>
           <div class="producto-badges">
             <span class="badge badge-${prod.tipo.toLowerCase()}">${prod.tipo}</span>
+            ${prod.moneda ? `<span class="badge badge-moneda">${escapeHtml(prod.moneda)}</span>` : ''}
             ${prod.tipo === 'FONDO' && prod.riesgo ? `<span class="badge badge-riesgo-${prod.riesgo.toLowerCase()}">Riesgo ${prod.riesgo}</span>` : ''}
           </div>
         </div>
@@ -532,6 +533,7 @@ function renderProductosContratados() {
             <div class="producto-nombre">${escapeHtml(prod.nombre)}</div>
             <div class="producto-badges">
               <span class="badge badge-${tipoClase}">${escapeHtml(tipoTexto)}</span>
+              ${prod.moneda ? `<span class="badge badge-moneda">${escapeHtml(prod.moneda)}</span>` : ''}
               ${tipoTexto === 'FONDO' && prod.riesgo ? `<span class="badge badge-riesgo-${prod.riesgo.toLowerCase()}">Riesgo ${prod.riesgo}</span>` : ''}
               <span class="badge badge-contratado">Contratado</span>
             </div>

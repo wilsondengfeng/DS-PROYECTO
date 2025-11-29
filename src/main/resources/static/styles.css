@@ -1283,6 +1283,12 @@ main.container > .cta-section {
     color: #0b5ed7;
 }
 
+.badge-moneda {
+    background: #fff4e5;
+    color: #d18600;
+    border: 1px solid #ffd59c;
+}
+
 .producto-card-compacto .producto-details {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }

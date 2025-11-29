@@ -55,6 +55,7 @@ async function cargarProductosDisponibles() {
             <div class="producto-nombre">${escapeHtml(prod.nombre)}</div>
             <div class="producto-badges">
               <span class="badge badge-${(prod.tipo || 'FONDO').toLowerCase()}">${prod.tipo || ''}</span>
+              ${prod.moneda ? `<span class="badge badge-moneda">${prod.moneda}</span>` : ''}
               ${prod.tipo === 'FONDO' && prod.riesgo ? `<span class="badge badge-riesgo-${prod.riesgo.toLowerCase()}">Riesgo ${prod.riesgo}</span>` : ''}
             </div>
           </div>
@@ -124,6 +125,7 @@ function renderResumenSeleccion() {
     ${productoSeleccionado.tipo === 'FONDO' ? `<p><strong>Riesgo:</strong> ${escapeHtml(productoSeleccionado.riesgo || 'Sin definir')}</p>` : ''}
     <p><strong>Descripción:</strong> ${escapeHtml(productoSeleccionado.descripcion || 'Sin descripción')}</p>
     <p><strong>Costo:</strong> ${escapeHtml(productoSeleccionado.costo || 'No especificado')}</p>
+    <p><strong>Moneda:</strong> ${productoSeleccionado.moneda || (moneda.esDolar ? "USD" : "SOL")}</p>
     <p><strong>Beneficio:</strong> ${escapeHtml(productoSeleccionado.beneficio || 'No especificado')}</p>
     <p><strong>Plazo:</strong> ${escapeHtml(productoSeleccionado.plazo || 'No especificado')}</p>
     <div class="form-group">
