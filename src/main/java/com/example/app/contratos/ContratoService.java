@@ -5,6 +5,7 @@ import com.example.app.contratos.dto.ContratoAdminDTO;
 import com.example.app.producto.Producto;
 import com.example.app.producto.ProductoRepository;
 import com.example.app.producto.ProductoService;
+import com.example.app.producto.TipoProducto;
 import com.example.app.producto.dto.ProductoResumenDTO;
 import com.example.app.usuarios.Usuario;
 import com.example.app.usuarios.UsuarioRepository;
@@ -66,9 +67,16 @@ public class ContratoService {
         Producto producto = productoRepository.findById(productoId)
                 .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no disponible"));
+
+        // Para SEGUROS el monto es fijo, no se ajusta saldo ni se admite aumento/disminución
+        boolean esSeguro = producto.getTipo() == TipoProducto.SEGURO;
+
         BigDecimal montoNormalizado = normalizarMonto(montoInvertido);
         Optional<Contrato> contratoExistente = contratoRepository.findByUsuarioIdAndProductoId(usuarioId, productoId);
         if (contratoExistente.isPresent()) {
+            if (esSeguro) {
+                throw new IllegalArgumentException("Los seguros tienen prima fija, no se puede ajustar el monto");
+            }
             BigDecimal anterior = contratoExistente.get().getMontoInvertido();
             BigDecimal diferencia = montoNormalizado.subtract(anterior);
             if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
@@ -89,12 +97,14 @@ public class ContratoService {
             contratoRepository.save(contratoExistente.get());
             return;
         }
-        if (obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(montoNormalizado) < 0) {
+        if (!esSeguro && obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(montoNormalizado) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente para contratar este producto");
         }
-        setSaldoPorMoneda(usuario, producto.getMoneda(),
-                obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(montoNormalizado));
-        usuarioRepository.save(usuario);
+        if (!esSeguro) {
+            setSaldoPorMoneda(usuario, producto.getMoneda(),
+                    obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(montoNormalizado));
+            usuarioRepository.save(usuario);
+        }
         Contrato contrato = new Contrato();
         contrato.setUsuario(usuario);
         contrato.setProducto(producto);

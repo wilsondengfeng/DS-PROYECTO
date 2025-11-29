@@ -153,15 +153,16 @@ async function confirmarContratacion() {
   const inputMonto = document.getElementById('montoInversion');
   const minimo = configuracionMontoActual?.min || 100;
   const simboloMoneda = configuracionMontoActual?.simbolo || 'S/';
-  const monto = parseFloat(inputMonto?.value);
+  const esSeguro = (productoSeleccionado.tipo || '').toUpperCase() === 'SEGURO';
+  const monto = esSeguro ? 0 : parseFloat(inputMonto?.value);
 
   if (!inputMonto || Number.isNaN(monto)) {
     alert('Ingresa el monto que deseas invertir.');
     return;
   }
 
-  if (monto < minimo) {
-    alert(`El monto mínimo recomendado para este fondo es ${simboloMoneda}${formatearNumero(minimo)}.`);
+  if (!esSeguro && monto < minimo) {
+    alert(`El monto minimo recomendado para este fondo es ${simboloMoneda}${formatearNumero(minimo)}.`);
     inputMonto.focus();
     return;
   }
@@ -169,6 +170,11 @@ async function confirmarContratacion() {
   const montoNormalizado = Math.round(monto * 100) / 100;
 
   const montoFormateado = new Intl.NumberFormat('es-PE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(montoNormalizado);
+
+const montoFormateado = new Intl.NumberFormat('es-PE', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(montoNormalizado);
