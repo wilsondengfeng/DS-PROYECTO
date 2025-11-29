@@ -48,6 +48,21 @@
     </header>
 
     <div class="container">
+      <!-- Balance -->
+      <div class="card">
+        <div class="saldo-header">
+          <div>
+            <h2>Saldo disponible</h2>
+            <p id="saldo-leyenda">Listo para operar</p>
+          </div>
+          <div class="saldo-valor" id="saldo-valor">S/ 0.00</div>
+        </div>
+        <div class="saldo-actions">
+          <button class="btn btn-primary" onclick="abrirOperacionSaldo('DEPOSITO')">Depositar</button>
+          <button class="btn btn-secondary" onclick="abrirOperacionSaldo('RETIRO')">Retirar</button>
+        </div>
+      </div>
+
       <!-- Productos contratados -->
       <div class="card contratados-card">
         <div class="contratados-header">

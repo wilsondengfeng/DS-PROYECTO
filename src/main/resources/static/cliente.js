@@ -14,6 +14,7 @@ let usuarioActual = null;
 let productosSeleccionados = new Set();
 let productosContratados = [];
 let contratosIds = new Set();
+let saldoActual = 0;
 let pestañaActual = 'fondos'; // 'fondos' o 'seguros'
 
 // Configuración de Axios
@@ -30,6 +31,7 @@ function verificarSesion() {
   if (sesion) {
     usuarioActual = JSON.parse(sesion);
     mostrarApp();
+    cargarSaldoLocal();
     cargarProductos();
     cargarContratos(true);
   } else {
@@ -71,6 +73,7 @@ async function login() {
 
     localStorage.setItem('usuarioCliente', JSON.stringify(usuarioActual));
     mostrarApp();
+    cargarSaldoLocal();
     cargarProductos();
     cargarContratos(true);
   } catch (error) {
@@ -87,6 +90,7 @@ function mostrarLogin() {
 function mostrarApp() {
   document.getElementById('loginModal').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
+  renderSaldoCaja();
   renderProductosContratados();
 }
 
@@ -96,6 +100,8 @@ function cerrarSesion() {
   productosSeleccionados.clear();
   productosContratados = [];
   contratosIds.clear();
+  saldoActual = 0;
+  renderSaldoCaja();
   renderProductosContratados();
   mostrarLogin();
 }
@@ -529,6 +535,90 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// ===== SALDO (frontend local) =====
+function cargarSaldoLocal() {
+  if (!usuarioActual) {
+    saldoActual = 0;
+    renderSaldoCaja();
+    return;
+  }
+  const mapa = JSON.parse(localStorage.getItem('saldosClientes') || '{}');
+  saldoActual = Number(mapa[usuarioActual.id] || 0);
+  renderSaldoCaja();
+}
+
+function guardarSaldoLocal() {
+  if (!usuarioActual) return;
+  const mapa = JSON.parse(localStorage.getItem('saldosClientes') || '{}');
+  mapa[usuarioActual.id] = saldoActual;
+  localStorage.setItem('saldosClientes', JSON.stringify(mapa));
+}
+
+function renderSaldoCaja() {
+  const saldoElemento = document.getElementById('saldo-valor');
+  const leyenda = document.getElementById('saldo-leyenda');
+  if (saldoElemento) {
+    saldoElemento.textContent = formatearMontoDisplay(saldoActual);
+  }
+  if (leyenda) {
+    leyenda.textContent = saldoActual > 0
+      ? 'Tienes saldo disponible para operar.'
+      : 'Recarga tu cuenta para poder invertir.';
+  }
+}
+
+function abrirOperacionSaldo(tipo) {
+  if (!usuarioActual) {
+    mostrarLogin();
+    return;
+  }
+  const esDeposito = tipo === 'DEPOSITO';
+  const mensaje = esDeposito
+    ? 'Ingresa el monto que deseas depositar:'
+    : 'Ingresa el monto que deseas retirar:';
+  const valor = prompt(mensaje);
+  if (valor === null) return;
+
+  const monto = normalizarEntradaMonetaria(valor);
+  if (monto === null) {
+    alert('Monto inválido. Intenta nuevamente.');
+    return;
+  }
+
+  procesarOperacionSaldo(tipo, monto);
+}
+
+function procesarOperacionSaldo(tipo, monto) {
+  if (tipo === 'RETIRO' && monto > saldoActual) {
+    alert('Saldo insuficiente para retirar esa cantidad.');
+    return;
+  }
+  saldoActual = tipo === 'DEPOSITO'
+    ? saldoActual + monto
+    : saldoActual - monto;
+  guardarSaldoLocal();
+  renderSaldoCaja();
+  alert(tipo === 'DEPOSITO' ? 'Depósito registrado.' : 'Retiro realizado.');
+}
+
+function formatearMontoDisplay(monto) {
+  const numero = Number(monto);
+  if (Number.isNaN(numero)) {
+    return 'S/ 0.00';
+  }
+  return `S/ ${numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function normalizarEntradaMonetaria(valor) {
+  if (!valor) return null;
+  const limpio = valor.toString().replace(',', '.').trim();
+  const numero = Number(limpio);
+  if (Number.isNaN(numero) || numero <= 0) {
+    return null;
+  }
+  return Math.round(numero * 100) / 100;
 }
 
 // Cerrar modales al hacer clic fuera
