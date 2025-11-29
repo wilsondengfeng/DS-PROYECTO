@@ -155,21 +155,7 @@ function mostrarProductos(productos) {
         <p><strong>Beneficio:</strong> ${escapeHtml(prod.beneficio || 'Sin beneficio definido')}</p>
       </div>
 
-      <div class="producto-details">
-        ${prod.tipo === 'FONDO' ? `
-        <div class="detail-item">
-          <div class="detail-label">Riesgo</div>
-          <div class="detail-value">${escapeHtml(prod.riesgo || 'Sin definir')}</div>
-        </div>` : ''}
-        <div class="detail-item">
-          <div class="detail-label">Costo</div>
-          <div class="detail-value">${escapeHtml(prod.costo || 'No especificado')}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Plazo</div>
-          <div class="detail-value">${escapeHtml(prod.plazo || 'No especificado')}</div>
-        </div>
-      </div>
+      <div class="producto-details"></div>
 
       <div class="producto-actions">
         <button class="btn btn-warning" onclick="editarProducto(${prod.id})">✏️ Editar</button>

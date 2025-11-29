@@ -168,25 +168,7 @@ function mostrarProductos(productos) {
         <p>${escapeHtml(prod.descripcion || 'Sin descripción')}</p>
       </div>
 
-      <div class="producto-details">
-        ${prod.tipo === 'FONDO' ? `
-        <div class="detail-item">
-          <div class="detail-label">Riesgo</div>
-          <div class="detail-value">${escapeHtml(prod.riesgo || 'Sin definir')}</div>
-        </div>` : ''}
-        <div class="detail-item">
-          <div class="detail-label">Costo</div>
-          <div class="detail-value">${escapeHtml(prod.costo || 'No especificado')}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Beneficio</div>
-          <div class="detail-value">${escapeHtml(prod.beneficio || 'No especificado')}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Plazo</div>
-          <div class="detail-value">${escapeHtml(prod.plazo || 'No especificado')}</div>
-        </div>
-      </div>
+      <div class="producto-details"></div>
 
       <div class="producto-actions">
         <button class="btn btn-primary" onclick="verDetalle(${prod.id})">📄 Ver Detalles</button>
@@ -480,25 +462,7 @@ function renderProductosContratados() {
           <p>${escapeHtml(descripcion)}</p>
         </div>
 
-        <div class="producto-details">
-          ${tipoTexto === 'FONDO' ? `
-          <div class="detail-item">
-            <div class="detail-label">Riesgo</div>
-            <div class="detail-value">${escapeHtml(prod.riesgo || 'Sin definir')}</div>
-          </div>` : ''}
-          <div class="detail-item">
-            <div class="detail-label">Costo</div>
-            <div class="detail-value">${escapeHtml(prod.costo || 'No especificado')}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Monto invertido</div>
-            <div class="detail-value">${formatearMontoContratado(prod.montoInvertido, prod.costo)}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Beneficio</div>
-            <div class="detail-value">${escapeHtml(beneficio)}</div>
-          </div>
-        </div>
+        <div class="producto-details"></div>
 
         <div class="producto-actions">
           <button class="btn btn-primary" onclick="verDetalle(${prod.id})">Ver Detalles</button>
