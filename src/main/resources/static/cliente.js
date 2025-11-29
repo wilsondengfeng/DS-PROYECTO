@@ -439,22 +439,27 @@ async function aumentarInversion(productoId) {
   if (!usuarioActual) return;
   const producto = productosContratados.find(p => p.id === productoId);
   const actual = Number(producto?.montoInvertido || 0);
-  const valor = prompt('¿Cuánto deseas invertir adicionalmente en este fondo?');
+  const valor = prompt('Cuanto deseas invertir adicionalmente en este fondo?');
   if (valor === null) return;
-  const adicional = normalizarEntradaMonetaria(valor);
-  if (adicional === null) {
-    alert('Monto inválido. Intenta nuevamente.');
+  const monto = normalizarEntradaMonetaria(valor);
+  if (monto === null) {
+    alert('Monto invalido. Intenta nuevamente.');
     return;
   }
-  const nuevoTotal = Math.round((actual + adicional) * 100) / 100;
   try {
-    await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoId}`, { monto: nuevoTotal });
+    const url = API_CONTRATOS(usuarioActual.id) + '/' + productoId;
+    console.log('URL:', url, 'Monto:', monto);
+    const res = await axios.post(url, { monto: monto });
+    console.log('Respuesta:', res.data);
     await cargarSaldo();
     await cargarContratos(true);
-    alert('Inversión aumentada correctamente.');
+    alert('Inversion aumentada correctamente.');
   } catch (error) {
-    console.error('Error al aumentar inversión:', error);
-    mostrarError(error.response?.data?.mensaje || 'No se pudo aumentar la inversión');
+    console.error('Error al aumentar inversion:', error);
+    console.error('Detalles:', error.response?.data);
+    const msg = error.response?.data?.mensaje || 'No se pudo aumentar la inversion';
+    alert(msg + ' (Status: ' + (error.response?.status || '?') + ')');
+    mostrarError(msg);
   }
 }
 
@@ -584,38 +589,125 @@ async function cargarSaldo() {
   }
   try {
     const [solRes, usdRes] = await Promise.all([
-      axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`, { params: { moneda: 'SOL' } }),
-      axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`, { params: { moneda: 'USD' } })
+      axios.get(API_SALDO_BASE(usuarioActual.id) + '/saldo?moneda=SOL'),
+      axios.get(API_SALDO_BASE(usuarioActual.id) + '/saldo?moneda=USD')
     ]);
     saldoSol = Number(solRes.data?.saldo ?? 0);
     saldoUsd = Number(usdRes.data?.saldo ?? 0);
+    console.log('Saldos cargados - SOL:', saldoSol, 'USD:', saldoUsd);
     renderSaldoCaja();
   } catch (error) {
     console.error('Error al obtener saldo:', error);
+    console.error('Detalles:', error.response?.data);
   }
 }
 
 async function procesarOperacionSaldo(moneda, tipo, monto) {
   try {
-    const endpointBase = tipo === 'DEPOSITO'
-      ? `${API_SALDO_BASE(usuarioActual.id)}/depositos`
-      : `${API_SALDO_BASE(usuarioActual.id)}/retiros`;
-    await axios.post(`${endpointBase}?moneda=${moneda}`, { monto });
-    await cargarSaldo();
-    alert(tipo === 'DEPOSITO' ? 'Deposito registrado.' : 'Retiro realizado.');
+    // Validaciones
+    if (!usuarioActual || !usuarioActual.id) {
+      alert('Por favor inicia sesion nuevamente.');
+      return;
+    }
+    
+    // Asegurar que monto es un número
+    const numMonto = typeof monto === 'string' ? parseFloat(monto) : Number(monto);
+    console.log('Monto procesado:', numMonto, 'Es numero valido:', !Number.isNaN(numMonto));
+    
+    if (Number.isNaN(numMonto) || numMonto <= 0) {
+      alert('El monto debe ser un numero positivo.');
+      return;
+    }
+    
+    // Validar que usuario tiene saldo suficiente para retiros
+    if (tipo === 'RETIRO') {
+      const saldoDisponible = moneda === 'USD' ? saldoUsd : saldoSol;
+      console.log('Saldo disponible:', saldoDisponible, 'Monto a retirar:', numMonto);
+      if (numMonto > saldoDisponible) {
+        alert('Saldo insuficiente para este retiro.');
+        return;
+      }
+    }
+    
+    // Construir URL
+    const endpoint = tipo === 'DEPOSITO' ? 'depositos' : 'retiros';
+    const url = API_SALDO_BASE(usuarioActual.id) + '/' + endpoint + '?moneda=' + moneda;
+    
+    // Construir payload
+    const payload = { monto: numMonto };
+    
+    console.log('=== OPERACION SALDO ===');
+    console.log('URL:', url);
+    console.log('Tipo:', tipo);
+    console.log('Moneda:', moneda);
+    console.log('Payload:', JSON.stringify(payload));
+    
+    // Enviar solicitud
+    const response = await axios.post(url, payload);
+    
+    console.log('Respuesta exitosa:', response.data);
+    
+    // Actualizar saldo local
+    if (response.data && response.data.saldo !== undefined) {
+      console.log('Saldo antes de actualizar - SOL:', saldoSol, 'USD:', saldoUsd);
+      if (moneda === 'USD') {
+        saldoUsd = Number(response.data.saldo);
+        console.log('Actualizado saldoUsd a:', saldoUsd);
+      } else {
+        saldoSol = Number(response.data.saldo);
+        console.log('Actualizado saldoSol a:', saldoSol);
+      }
+      console.log('Saldo despues de actualizar - SOL:', saldoSol, 'USD:', saldoUsd);
+      console.log('Llamando a renderSaldoCaja()...');
+      renderSaldoCaja();
+      console.log('renderSaldoCaja() completado');
+    } else {
+      console.error('Response data no contiene saldo:', response.data);
+    }
+    
+    // Mostrar mensaje de exito
+    const msg = tipo === 'DEPOSITO' 
+      ? 'Deposito de ' + moneda + ' ' + numMonto.toFixed(2) + ' registrado correctamente.' 
+      : 'Retiro de ' + moneda + ' ' + numMonto.toFixed(2) + ' realizado correctamente.';
+    alert(msg);
+    
   } catch (error) {
-    console.error('Error al procesar saldo:', error);
-    alert(error.response?.data?.mensaje || 'No se pudo procesar la operacion');
+    console.error('=== ERROR EN OPERACION SALDO ===');
+    console.error('Error:', error);
+    console.error('Config:', error.config);
+    console.error('Response Status:', error.response?.status);
+    console.error('Response Data:', error.response?.data);
+    console.error('Response Headers:', error.response?.headers);
+    
+    // Intentar extraer mensaje de error
+    let mensajeError = 'No se pudo procesar la operacion';
+    if (error.response?.data?.mensaje) {
+      mensajeError = error.response.data.mensaje;
+    } else if (error.response?.data?.message) {
+      mensajeError = error.response.data.message;
+    } else if (error.message) {
+      mensajeError = error.message;
+    }
+    
+    const statusCode = error.response?.status || 'desconocido';
+    alert(mensajeError + ' (Error ' + statusCode + ')');
   }
 }
 
 function renderSaldoCaja() {
+  console.log('=== RENDER SALDO CAJA ===');
+  console.log('saldoSol:', saldoSol);
+  console.log('saldoUsd:', saldoUsd);
+  console.log('productosContratados:', productosContratados);
+  
   const acumulados = productosContratados.reduce((acc, p) => {
     const moneda = (p.moneda || 'SOL').toUpperCase();
     acc[moneda] = (acc[moneda] || 0) + Number(p.montoInvertido || 0);
     return acc;
   }, { SOL: 0, USD: 0 });
 
+  console.log('acumulados:', acumulados);
+  
   renderTarjetaSaldo('SOL', saldoSol, acumulados.SOL || 0);
   renderTarjetaSaldo('USD', saldoUsd, acumulados.USD || 0);
 }
@@ -630,19 +722,50 @@ function renderTarjetaSaldo(moneda, saldoDisponible, invertido) {
   const disponibleElem = document.getElementById(`saldo-${clave}-disponible`);
   const barra = document.getElementById(`saldo-${clave}-barra-fill`);
 
+  console.log(`=== RENDER TARJETA ${moneda} ===`);
+  console.log('Saldo disponible:', saldoDisponible);
+  console.log('Invertido:', invertido);
+  console.log('Elemento valor:', valor ? 'encontrado' : 'NO ENCONTRADO');
+  console.log('Elemento leyenda:', leyenda ? 'encontrado' : 'NO ENCONTRADO');
+  console.log('Elemento total:', totalElem ? 'encontrado' : 'NO ENCONTRADO');
+  console.log('Elemento invertido:', invertidoElem ? 'encontrado' : 'NO ENCONTRADO');
+  console.log('Elemento disponible:', disponibleElem ? 'encontrado' : 'NO ENCONTRADO');
+  console.log('Elemento barra:', barra ? 'encontrado' : 'NO ENCONTRADO');
+
   const total = saldoDisponible + invertido;
   const porcentaje = total > 0 ? Math.min(100, (invertido / total) * 100) : 0;
 
-  if (valor) valor.textContent = formatearMontoDisplay(saldoDisponible, moneda);
+  if (valor) {
+    const formatted = formatearMontoDisplay(saldoDisponible, moneda);
+    console.log(`Actualizando saldo-${clave}-valor a: ${formatted}`);
+    valor.textContent = formatted;
+  }
   if (leyenda) {
-    leyenda.textContent = saldoDisponible > 0
+    const newLeyenda = saldoDisponible > 0
       ? `Saldo disponible en ${MONEDAS[moneda]?.nombre || 'saldo'}.`
       : 'Recarga tu cuenta para operar.';
+    console.log(`Actualizando saldo-${clave}-leyenda a: ${newLeyenda}`);
+    leyenda.textContent = newLeyenda;
   }
-  if (totalElem) totalElem.textContent = formatearMontoDisplay(total, moneda);
-  if (invertidoElem) invertidoElem.textContent = formatearMontoDisplay(invertido, moneda);
-  if (disponibleElem) disponibleElem.textContent = formatearMontoDisplay(saldoDisponible, moneda);
-  if (barra) barra.style.width = `${porcentaje}%`;
+  if (totalElem) {
+    const formatted = formatearMontoDisplay(total, moneda);
+    console.log(`Actualizando saldo-${clave}-total a: ${formatted}`);
+    totalElem.textContent = formatted;
+  }
+  if (invertidoElem) {
+    const formatted = formatearMontoDisplay(invertido, moneda);
+    console.log(`Actualizando saldo-${clave}-invertido a: ${formatted}`);
+    invertidoElem.textContent = formatted;
+  }
+  if (disponibleElem) {
+    const formatted = formatearMontoDisplay(saldoDisponible, moneda);
+    console.log(`Actualizando saldo-${clave}-disponible a: ${formatted}`);
+    disponibleElem.textContent = formatted;
+  }
+  if (barra) {
+    console.log(`Actualizando saldo-${clave}-barra-fill a: ${porcentaje}%`);
+    barra.style.width = `${porcentaje}%`;
+  }
 }
 
 function abrirOperacionSaldo(moneda, tipo) {
@@ -652,8 +775,8 @@ function abrirOperacionSaldo(moneda, tipo) {
   }
   const esDeposito = tipo === 'DEPOSITO';
   const mensaje = esDeposito
-    ? `Ingresa el monto que deseas depositar en ${moneda}:`
-    : `Ingresa el monto que deseas retirar en ${moneda}:`;
+    ? 'Ingresa el monto que deseas depositar en ' + moneda + ':'
+    : 'Ingresa el monto que deseas retirar en ' + moneda + ':';
   const valor = prompt(mensaje);
   if (valor === null) return;
 
@@ -662,8 +785,29 @@ function abrirOperacionSaldo(moneda, tipo) {
     alert('Monto invalido. Intenta nuevamente.');
     return;
   }
-
+  
+  console.log('Abriendo operacion - Moneda:', moneda, 'Tipo:', tipo, 'Monto:', monto, 'Tipo monto:', typeof monto);
   procesarOperacionSaldo(moneda, tipo, monto);
+}
+
+function normalizarEntradaMonetaria(entrada) {
+  if (!entrada || typeof entrada !== 'string') return null;
+  
+  // Limpiar espacios en blanco
+  entrada = entrada.trim();
+  
+  // Reemplazar coma con punto para decimales
+  entrada = entrada.replace(',', '.');
+  
+  // Convertir a número
+  const numero = parseFloat(entrada);
+  
+  // Validar que sea un número válido y positivo
+  if (isNaN(numero) || numero <= 0) {
+    return null;
+  }
+  
+  return numero;
 }
 
 function formatearMontoDisplay(monto, moneda = 'SOL') {
