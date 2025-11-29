@@ -439,17 +439,18 @@ async function aumentarInversion(productoId) {
   if (!usuarioActual) return;
   const producto = productosContratados.find(p => p.id === productoId);
   const actual = Number(producto?.montoInvertido || 0);
-  const valor = prompt('Cuanto deseas invertir adicionalmente en este fondo?');
+  const valor = prompt('Cuanto deseas invertir adicionalmente en este producto?');
   if (valor === null) return;
-  const monto = normalizarEntradaMonetaria(valor);
-  if (monto === null) {
+  const montoAdicional = normalizarEntradaMonetaria(valor);
+  if (montoAdicional === null) {
     alert('Monto invalido. Intenta nuevamente.');
     return;
   }
+  const nuevoTotal = Math.round((actual + montoAdicional) * 100) / 100;
   try {
     const url = API_CONTRATOS(usuarioActual.id) + '/' + productoId;
-    console.log('URL:', url, 'Monto:', monto);
-    const res = await axios.post(url, { monto: monto });
+    console.log('URL:', url, 'Monto total:', nuevoTotal);
+    const res = await axios.post(url, { monto: nuevoTotal });
     console.log('Respuesta:', res.data);
     await cargarSaldo();
     await cargarContratos(true);
@@ -459,6 +460,41 @@ async function aumentarInversion(productoId) {
     console.error('Detalles:', error.response?.data);
     const msg = error.response?.data?.mensaje || 'No se pudo aumentar la inversion';
     alert(msg + ' (Status: ' + (error.response?.status || '?') + ')');
+    mostrarError(msg);
+  }
+}
+
+async function disminuirInversion(productoId) {
+  if (!usuarioActual) return;
+  const producto = productosContratados.find(p => p.id === productoId);
+  const actual = Number(producto?.montoInvertido || 0);
+  if (!producto) {
+    alert('No encontramos el producto en tus contratos.');
+    return;
+  }
+  const valor = prompt(`Cuanto deseas reducir de este producto? Monto actual: ${formatearMontoContratado(actual, producto.moneda || '')}`);
+  if (valor === null) return;
+  const reduccion = normalizarEntradaMonetaria(valor);
+  if (reduccion === null) {
+    alert('Monto invalido. Intenta nuevamente.');
+    return;
+  }
+  if (reduccion > actual) {
+    alert('No puedes reducir mas de lo invertido.');
+    return;
+  }
+  const nuevoTotal = Math.max(0, Math.round((actual - reduccion) * 100) / 100);
+  try {
+    const url = API_CONTRATOS(usuarioActual.id) + '/' + productoId;
+    const res = await axios.post(url, { monto: nuevoTotal });
+    console.log('Respuesta:', res.data);
+    await cargarSaldo();
+    await cargarContratos(true);
+    alert('Inversion reducida correctamente.');
+  } catch (error) {
+    console.error('Error al disminuir inversion:', error);
+    const msg = error.response?.data?.mensaje || 'No se pudo reducir la inversion';
+    alert(msg);
     mostrarError(msg);
   }
 }
@@ -511,7 +547,8 @@ function renderProductosContratados() {
 
         <div class="producto-actions">
           <button class="btn btn-primary" onclick="verDetalle(${prod.id})">Ver Detalles</button>
-          <button class="btn btn-warning" onclick="aumentarInversion(${prod.id})">Aumentar inversión</button>
+          <button class="btn btn-warning" onclick="aumentarInversion(${prod.id})">Aumentar inversion</button>
+          <button class="btn btn-secondary" onclick="disminuirInversion(${prod.id})">Disminuir inversion</button>
           <button class="btn btn-danger" onclick="eliminarContrato(${prod.id})">Eliminar producto</button>
         </div>
       </div>

@@ -70,19 +70,22 @@ public class ContratoService {
         Optional<Contrato> contratoExistente = contratoRepository.findByUsuarioIdAndProductoId(usuarioId, productoId);
         if (contratoExistente.isPresent()) {
             BigDecimal anterior = contratoExistente.get().getMontoInvertido();
-            BigDecimal diferencia = montoNormalizado;
+            BigDecimal diferencia = montoNormalizado.subtract(anterior);
             if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
-                // aumentar inversión - el monto ingresado es ADICIONAL
+                // aumentar inversión (monto recibido es el nuevo total)
                 if (obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(diferencia) < 0) {
-                    throw new IllegalArgumentException("Saldo insuficiente para aumentar la inversión");
+                    throw new IllegalArgumentException("Saldo insuficiente para aumentar la inversiA3n");
                 }
                 setSaldoPorMoneda(usuario, producto.getMoneda(),
                         obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(diferencia));
                 usuarioRepository.save(usuario);
-                // Sumar el nuevo monto al monto anterior
-                BigDecimal nuevoTotal = anterior.add(montoNormalizado);
-                contratoExistente.get().setMontoInvertido(nuevoTotal);
+            } else if (diferencia.compareTo(BigDecimal.ZERO) < 0) {
+                // disminuir inversión: se devuelve la diferencia al saldo
+                setSaldoPorMoneda(usuario, producto.getMoneda(),
+                        obtenerSaldoPorMoneda(usuario, producto.getMoneda()).add(diferencia.abs()));
+                usuarioRepository.save(usuario);
             }
+            contratoExistente.get().setMontoInvertido(montoNormalizado);
             contratoRepository.save(contratoExistente.get());
             return;
         }
@@ -140,8 +143,8 @@ public class ContratoService {
             throw new IllegalArgumentException("Debes indicar un monto a invertir");
         }
         BigDecimal montoNormalizado = monto.setScale(2, RoundingMode.HALF_UP);
-        if (montoNormalizado.compareTo(BigDecimal.valueOf(100)) < 0) {
-            throw new IllegalArgumentException("El monto minimo de inversion es 100.00");
+        if (montoNormalizado.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El monto debe ser mayor o igual a 0.00");
         }
         return montoNormalizado;
     }
