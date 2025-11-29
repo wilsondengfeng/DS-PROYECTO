@@ -69,9 +69,24 @@ public class ContratoService {
         BigDecimal montoNormalizado = normalizarMonto(montoInvertido);
         Optional<Contrato> contratoExistente = contratoRepository.findByUsuarioIdAndProductoId(usuarioId, productoId);
         if (contratoExistente.isPresent()) {
+            BigDecimal anterior = contratoExistente.get().getMontoInvertido();
+            BigDecimal diferencia = montoNormalizado.subtract(anterior);
+            if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
+                // aumentar inversión
+                if (usuario.getSaldo().compareTo(diferencia) < 0) {
+                    throw new IllegalArgumentException("Saldo insuficiente para aumentar la inversión");
+                }
+                usuario.setSaldo(usuario.getSaldo().subtract(diferencia));
+                usuarioRepository.save(usuario);
+            }
             contratoExistente.get().setMontoInvertido(montoNormalizado);
             return;
         }
+        if (usuario.getSaldo().compareTo(montoNormalizado) < 0) {
+            throw new IllegalArgumentException("Saldo insuficiente para contratar este producto");
+        }
+        usuario.setSaldo(usuario.getSaldo().subtract(montoNormalizado));
+        usuarioRepository.save(usuario);
         Contrato contrato = new Contrato();
         contrato.setUsuario(usuario);
         contrato.setProducto(producto);

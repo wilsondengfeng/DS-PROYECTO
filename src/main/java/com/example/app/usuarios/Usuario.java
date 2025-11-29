@@ -4,6 +4,8 @@ import com.example.app.usuarios.model.RolUsuario;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "usuarios")
 @Data
@@ -25,6 +27,9 @@ public class Usuario {
 
     @Column(nullable = false, length = 120)
     private String email;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal saldo = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

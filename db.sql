@@ -21,6 +21,7 @@ CREATE TABLE usuarios(
     login VARCHAR(20) UNIQUE NOT NULL,
     clave VARCHAR(60) NOT NULL,
     email VARCHAR(120) NOT NULL,
+    saldo NUMERIC(15,2) NOT NULL DEFAULT 0,
     rol VARCHAR(20) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
@@ -58,10 +59,10 @@ CREATE TABLE solicitudes_informacion (
 -- DATOS DE REFERENCIA
 -- ==========================
 
-INSERT INTO usuarios (nombre, login, clave, email, rol) VALUES
-    ('Ana Inversionista', 'ana', '1234', 'ana@conglomerado.com', 'CLIENTE'),
-    ('Luis Emprendedor', 'luis', '1234', 'luis@conglomerado.com', 'CLIENTE'),
-    ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN');
+INSERT INTO usuarios (nombre, login, clave, email, rol, saldo) VALUES
+    ('Ana Inversionista', 'ana', '1234', 'ana@conglomerado.com', 'CLIENTE', 25000.00),
+    ('Luis Emprendedor', 'luis', '1234', 'luis@conglomerado.com', 'CLIENTE', 15000.00),
+    ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN', 0.00);
 
 INSERT INTO productos (nombre, tipo, riesgo, descripcion, beneficio, costo, plazo, activo) VALUES
     ('IF Libre Disponibilidad Soles FMIV', 'FONDO', 'BAJO', 'Es nuestra alternativa extra conservadora, en soles, que te permite disponer de tu dinero cuando quieras. Invierte unicamente en renta fija y es de riesgo muy bajo.', 'Rentabilidad nominal a octubre 2025*: Serie A 3.15%, Serie B 3.31%, Serie C 3.21%.', 'Moneda: Soles. Libre disponibilidad sin penalidad.', 'Sin plazo minimo; acceso inmediato al capital.', TRUE),

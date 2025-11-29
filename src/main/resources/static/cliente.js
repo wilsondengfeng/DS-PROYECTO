@@ -9,6 +9,7 @@ const API_AUTH = `${API_BASE}/api/auth`;
 const API_PRODUCTOS = `${API_BASE}/api/clientes/productos`;
 const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/contratos`;
 const API_SOLICITUDES = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/solicitudes`;
+const API_SALDO_BASE = (clienteId) => `${API_BASE}/api/usuarios/${clienteId}`;
 
 let usuarioActual = null;
 let productosSeleccionados = new Set();
@@ -31,7 +32,7 @@ function verificarSesion() {
   if (sesion) {
     usuarioActual = JSON.parse(sesion);
     mostrarApp();
-    cargarSaldoLocal();
+    cargarSaldo();
     cargarProductos();
     cargarContratos(true);
   } else {
@@ -73,7 +74,7 @@ async function login() {
 
     localStorage.setItem('usuarioCliente', JSON.stringify(usuarioActual));
     mostrarApp();
-    cargarSaldoLocal();
+    cargarSaldo();
     cargarProductos();
     cargarContratos(true);
   } catch (error) {
@@ -425,6 +426,29 @@ async function eliminarContrato(productoId) {
   }
 }
 
+async function aumentarInversion(productoId) {
+  if (!usuarioActual) return;
+  const producto = productosContratados.find(p => p.id === productoId);
+  const actual = Number(producto?.montoInvertido || 0);
+  const valor = prompt('¿Cuánto deseas invertir adicionalmente en este fondo?');
+  if (valor === null) return;
+  const adicional = normalizarEntradaMonetaria(valor);
+  if (adicional === null) {
+    alert('Monto inválido. Intenta nuevamente.');
+    return;
+  }
+  const nuevoTotal = Math.round((actual + adicional) * 100) / 100;
+  try {
+    await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoId}`, { monto: nuevoTotal });
+    await cargarSaldo();
+    await cargarContratos(true);
+    alert('Inversión aumentada correctamente.');
+  } catch (error) {
+    console.error('Error al aumentar inversión:', error);
+    mostrarError(error.response?.data?.mensaje || 'No se pudo aumentar la inversión');
+  }
+}
+
 function renderProductosContratados() {
   const container = document.getElementById('contratados-container');
   if (!container) return;
@@ -466,12 +490,14 @@ function renderProductosContratados() {
 
         <div class="producto-descripcion">
           <p>${escapeHtml(descripcion)}</p>
+          <p><strong>Monto invertido:</strong> ${formatearMontoContratado(prod.montoInvertido, prod.costo)}</p>
         </div>
 
         <div class="producto-details"></div>
 
         <div class="producto-actions">
           <button class="btn btn-primary" onclick="verDetalle(${prod.id})">Ver Detalles</button>
+          <button class="btn btn-warning" onclick="aumentarInversion(${prod.id})">Aumentar inversión</button>
           <button class="btn btn-danger" onclick="eliminarContrato(${prod.id})">Eliminar producto</button>
         </div>
       </div>
@@ -537,23 +563,35 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ===== SALDO (frontend local) =====
-function cargarSaldoLocal() {
+// ===== SALDO (API) =====
+async function cargarSaldo() {
   if (!usuarioActual) {
     saldoActual = 0;
     renderSaldoCaja();
     return;
   }
-  const mapa = JSON.parse(localStorage.getItem('saldosClientes') || '{}');
-  saldoActual = Number(mapa[usuarioActual.id] || 0);
-  renderSaldoCaja();
+  try {
+    const res = await axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`);
+    saldoActual = Number(res.data?.saldo ?? 0);
+    renderSaldoCaja();
+  } catch (error) {
+    console.error('Error al obtener saldo:', error);
+  }
 }
 
-function guardarSaldoLocal() {
-  if (!usuarioActual) return;
-  const mapa = JSON.parse(localStorage.getItem('saldosClientes') || '{}');
-  mapa[usuarioActual.id] = saldoActual;
-  localStorage.setItem('saldosClientes', JSON.stringify(mapa));
+async function procesarOperacionSaldo(tipo, monto) {
+  try {
+    const endpoint = tipo === 'DEPOSITO'
+      ? `${API_SALDO_BASE(usuarioActual.id)}/depositos`
+      : `${API_SALDO_BASE(usuarioActual.id)}/retiros`;
+    const res = await axios.post(endpoint, { monto });
+    saldoActual = Number(res.data?.saldo ?? saldoActual);
+    renderSaldoCaja();
+    alert(tipo === 'DEPOSITO' ? 'Deposito registrado.' : 'Retiro realizado.');
+  } catch (error) {
+    console.error('Error al procesar saldo:', error);
+    alert(error.response?.data?.mensaje || 'No se pudo procesar la operacion');
+  }
 }
 
 function renderSaldoCaja() {
@@ -565,7 +603,7 @@ function renderSaldoCaja() {
   if (leyenda) {
     leyenda.textContent = saldoActual > 0
       ? 'Tienes saldo disponible para operar.'
-      : 'Recarga tu cuenta para poder invertir.';
+      : 'Recarga tu cuenta para poder invertir o retirar.';
   }
 }
 
@@ -588,19 +626,6 @@ function abrirOperacionSaldo(tipo) {
   }
 
   procesarOperacionSaldo(tipo, monto);
-}
-
-function procesarOperacionSaldo(tipo, monto) {
-  if (tipo === 'RETIRO' && monto > saldoActual) {
-    alert('Saldo insuficiente para retirar esa cantidad.');
-    return;
-  }
-  saldoActual = tipo === 'DEPOSITO'
-    ? saldoActual + monto
-    : saldoActual - monto;
-  guardarSaldoLocal();
-  renderSaldoCaja();
-  alert(tipo === 'DEPOSITO' ? 'Depósito registrado.' : 'Retiro realizado.');
 }
 
 function formatearMontoDisplay(monto) {
@@ -632,4 +657,5 @@ document.addEventListener('click', (event) => {
 if (usuarioActual) {
   cambiarPestaña('fondos'); // Iniciar con fondos
   cargarContratos(true);
+  cargarSaldo();
 }

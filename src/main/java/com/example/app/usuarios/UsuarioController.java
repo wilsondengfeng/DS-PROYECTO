@@ -1,11 +1,14 @@
 package com.example.app.usuarios;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -32,11 +35,64 @@ public class UsuarioController {
                     .body("Ya existe un usuario con ese login");
             }
 
+            if (usuario.getSaldo() == null) {
+                usuario.setSaldo(BigDecimal.ZERO);
+            }
+
             Usuario nuevoUsuario = usuarioRepository.save(usuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al crear usuario: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/{id}/saldo")
+    public ResponseEntity<?> obtenerSaldo(@PathVariable Long id) {
+        return usuarioRepository.findByIdAndActivoTrue(id)
+            .map(u -> ResponseEntity.ok(Map.<String, Object>of("saldo", u.getSaldo())))
+            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.<String, Object>of("mensaje", "Usuario no encontrado o inactivo")));
+    }
+
+    @PostMapping("/{id}/depositos")
+    public ResponseEntity<?> depositar(@PathVariable Long id, @RequestBody MovimientoSaldoRequest req) {
+        if (req == null || req.getMonto() == null || req.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.badRequest().body(Map.<String, Object>of("mensaje", "Monto invalido"));
+        }
+
+        return usuarioRepository.findByIdAndActivoTrue(id)
+            .map(u -> {
+                u.setSaldo(u.getSaldo().add(req.getMonto()));
+                usuarioRepository.save(u);
+                return ResponseEntity.ok(Map.<String, Object>of("saldo", u.getSaldo()));
+            })
+            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.<String, Object>of("mensaje", "Usuario no encontrado o inactivo")));
+    }
+
+    @PostMapping("/{id}/retiros")
+    public ResponseEntity<?> retirar(@PathVariable Long id, @RequestBody MovimientoSaldoRequest req) {
+        if (req == null || req.getMonto() == null || req.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.badRequest().body(Map.<String, Object>of("mensaje", "Monto invalido"));
+        }
+
+        return usuarioRepository.findByIdAndActivoTrue(id)
+            .map(u -> {
+                if (u.getSaldo().compareTo(req.getMonto()) < 0) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.<String, Object>of("mensaje", "Saldo insuficiente"));
+                }
+                u.setSaldo(u.getSaldo().subtract(req.getMonto()));
+                usuarioRepository.save(u);
+                return ResponseEntity.ok(Map.<String, Object>of("saldo", u.getSaldo()));
+            })
+            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.<String, Object>of("mensaje", "Usuario no encontrado o inactivo")));
+    }
+
+    @Data
+    private static class MovimientoSaldoRequest {
+        private BigDecimal monto;
     }
 }
