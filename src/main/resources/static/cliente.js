@@ -11,11 +11,17 @@ const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/cont
 const API_SOLICITUDES = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/solicitudes`;
 const API_SALDO_BASE = (clienteId) => `${API_BASE}/api/usuarios/${clienteId}`;
 
+const MONEDAS = {
+  SOL: { simbolo: 'S/', nombre: 'soles' },
+  USD: { simbolo: '$', nombre: 'dolares' }
+};
+
 let usuarioActual = null;
 let productosSeleccionados = new Set();
 let productosContratados = [];
 let contratosIds = new Set();
-let saldoActual = 0;
+let saldoSol = 0;
+let saldoUsd = 0;
 let pestañaActual = 'fondos'; // 'fondos' o 'seguros'
 
 // Configuración de Axios
@@ -101,7 +107,8 @@ function cerrarSesion() {
   productosSeleccionados.clear();
   productosContratados = [];
   contratosIds.clear();
-  saldoActual = 0;
+  saldoSol = 0;
+  saldoUsd = 0;
   renderSaldoCaja();
   renderProductosContratados();
   mostrarLogin();
@@ -390,6 +397,7 @@ async function cargarContratos(refrescarCatalogo = false) {
     productosContratados = Array.isArray(res.data) ? res.data : [];
     contratosIds = new Set(productosContratados.map(p => p.id));
     renderProductosContratados();
+    renderSaldoCaja();
     if (refrescarCatalogo) {
       aplicarFiltros();
     }
@@ -398,6 +406,7 @@ async function cargarContratos(refrescarCatalogo = false) {
     productosContratados = [];
     contratosIds = new Set();
     renderProductosContratados();
+    renderSaldoCaja();
   }
 }
 
@@ -490,7 +499,7 @@ function renderProductosContratados() {
 
         <div class="producto-descripcion">
           <p>${escapeHtml(descripcion)}</p>
-          <p><strong>Monto invertido:</strong> ${formatearMontoContratado(prod.montoInvertido, prod.costo)}</p>
+          <p><strong>Monto invertido:</strong> ${formatearMontoContratado(prod.montoInvertido, prod.moneda || prod.costo)}</p>
         </div>
 
         <div class="producto-details"></div>
@@ -545,9 +554,10 @@ function formatearMontoContratado(monto, referenciaMoneda = '') {
   if (monto === null || monto === undefined) {
     return 'Sin registro';
   }
-  const texto = (referenciaMoneda || '').toLowerCase();
-  const normalizada = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const esDolar = texto.includes('usd') || normalizada.includes('dolar');
+  const texto = (referenciaMoneda || '').toString();
+  const upper = texto.toUpperCase();
+  const normalizada = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const esDolar = upper === 'USD' || normalizada.includes('usd') || normalizada.includes('dolar');
   const simbolo = esDolar ? '$' : 'S/';
   const numero = Number(monto);
   if (Number.isNaN(numero)) {
@@ -563,30 +573,35 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+
 // ===== SALDO (API) =====
 async function cargarSaldo() {
   if (!usuarioActual) {
-    saldoActual = 0;
+    saldoSol = 0;
+    saldoUsd = 0;
     renderSaldoCaja();
     return;
   }
   try {
-    const res = await axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`);
-    saldoActual = Number(res.data?.saldo ?? 0);
+    const [solRes, usdRes] = await Promise.all([
+      axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`, { params: { moneda: 'SOL' } }),
+      axios.get(`${API_SALDO_BASE(usuarioActual.id)}/saldo`, { params: { moneda: 'USD' } })
+    ]);
+    saldoSol = Number(solRes.data?.saldo ?? 0);
+    saldoUsd = Number(usdRes.data?.saldo ?? 0);
     renderSaldoCaja();
   } catch (error) {
     console.error('Error al obtener saldo:', error);
   }
 }
 
-async function procesarOperacionSaldo(tipo, monto) {
+async function procesarOperacionSaldo(moneda, tipo, monto) {
   try {
-    const endpoint = tipo === 'DEPOSITO'
+    const endpointBase = tipo === 'DEPOSITO'
       ? `${API_SALDO_BASE(usuarioActual.id)}/depositos`
       : `${API_SALDO_BASE(usuarioActual.id)}/retiros`;
-    const res = await axios.post(endpoint, { monto });
-    saldoActual = Number(res.data?.saldo ?? saldoActual);
-    renderSaldoCaja();
+    await axios.post(`${endpointBase}?moneda=${moneda}`, { monto });
+    await cargarSaldo();
     alert(tipo === 'DEPOSITO' ? 'Deposito registrado.' : 'Retiro realizado.');
   } catch (error) {
     console.error('Error al procesar saldo:', error);
@@ -595,55 +610,69 @@ async function procesarOperacionSaldo(tipo, monto) {
 }
 
 function renderSaldoCaja() {
-  const saldoElemento = document.getElementById('saldo-valor');
-  const leyenda = document.getElementById('saldo-leyenda');
-  if (saldoElemento) {
-    saldoElemento.textContent = formatearMontoDisplay(saldoActual);
-  }
-  if (leyenda) {
-    leyenda.textContent = saldoActual > 0
-      ? 'Tienes saldo disponible para operar.'
-      : 'Recarga tu cuenta para poder invertir o retirar.';
-  }
+  const acumulados = productosContratados.reduce((acc, p) => {
+    const moneda = (p.moneda || 'SOL').toUpperCase();
+    acc[moneda] = (acc[moneda] || 0) + Number(p.montoInvertido || 0);
+    return acc;
+  }, { SOL: 0, USD: 0 });
+
+  renderTarjetaSaldo('SOL', saldoSol, acumulados.SOL || 0);
+  renderTarjetaSaldo('USD', saldoUsd, acumulados.USD || 0);
 }
 
-function abrirOperacionSaldo(tipo) {
+function renderTarjetaSaldo(moneda, saldoDisponible, invertido) {
+  const clave = moneda.toLowerCase();
+  const simbolo = MONEDAS[moneda]?.simbolo || 'S/';
+  const leyenda = document.getElementById(`saldo-${clave}-leyenda`);
+  const valor = document.getElementById(`saldo-${clave}-valor`);
+  const totalElem = document.getElementById(`saldo-${clave}-total`);
+  const invertidoElem = document.getElementById(`saldo-${clave}-invertido`);
+  const disponibleElem = document.getElementById(`saldo-${clave}-disponible`);
+  const barra = document.getElementById(`saldo-${clave}-barra-fill`);
+
+  const total = saldoDisponible + invertido;
+  const porcentaje = total > 0 ? Math.min(100, (invertido / total) * 100) : 0;
+
+  if (valor) valor.textContent = formatearMontoDisplay(saldoDisponible, moneda);
+  if (leyenda) {
+    leyenda.textContent = saldoDisponible > 0
+      ? `Saldo disponible en ${MONEDAS[moneda]?.nombre || 'saldo'}.`
+      : 'Recarga tu cuenta para operar.';
+  }
+  if (totalElem) totalElem.textContent = formatearMontoDisplay(total, moneda);
+  if (invertidoElem) invertidoElem.textContent = formatearMontoDisplay(invertido, moneda);
+  if (disponibleElem) disponibleElem.textContent = formatearMontoDisplay(saldoDisponible, moneda);
+  if (barra) barra.style.width = `${porcentaje}%`;
+}
+
+function abrirOperacionSaldo(moneda, tipo) {
   if (!usuarioActual) {
     mostrarLogin();
     return;
   }
   const esDeposito = tipo === 'DEPOSITO';
   const mensaje = esDeposito
-    ? 'Ingresa el monto que deseas depositar:'
-    : 'Ingresa el monto que deseas retirar:';
+    ? `Ingresa el monto que deseas depositar en ${moneda}:`
+    : `Ingresa el monto que deseas retirar en ${moneda}:`;
   const valor = prompt(mensaje);
   if (valor === null) return;
 
   const monto = normalizarEntradaMonetaria(valor);
   if (monto === null) {
-    alert('Monto inválido. Intenta nuevamente.');
+    alert('Monto invalido. Intenta nuevamente.');
     return;
   }
 
-  procesarOperacionSaldo(tipo, monto);
+  procesarOperacionSaldo(moneda, tipo, monto);
 }
 
-function formatearMontoDisplay(monto) {
+function formatearMontoDisplay(monto, moneda = 'SOL') {
   const numero = Number(monto);
+  const simbolo = MONEDAS[moneda]?.simbolo || 'S/';
   if (Number.isNaN(numero)) {
-    return 'S/ 0.00';
+    return `${simbolo}0.00`;
   }
-  return `S/ ${numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function normalizarEntradaMonetaria(valor) {
-  if (!valor) return null;
-  const limpio = valor.toString().replace(',', '.').trim();
-  const numero = Number(limpio);
-  if (Number.isNaN(numero) || numero <= 0) {
-    return null;
-  }
-  return Math.round(numero * 100) / 100;
+  return `${simbolo}${numero.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 // Cerrar modales al hacer clic fuera

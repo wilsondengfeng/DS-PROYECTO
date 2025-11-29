@@ -10,6 +10,7 @@ public class ProductoDetalleDTO {
     Long id;
     String nombre;
     TipoProducto tipo;
+    String moneda;
     String riesgo;
     String descripcion;
     String beneficio;

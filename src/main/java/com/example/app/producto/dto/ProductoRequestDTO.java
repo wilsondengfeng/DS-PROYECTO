@@ -19,6 +19,10 @@ public class ProductoRequestDTO {
     @Size(max = 500)
     private String descripcion;
 
+    @NotBlank
+    @Size(max = 10)
+    private String moneda;
+
     @Size(max = 500)
     private String beneficio;
 

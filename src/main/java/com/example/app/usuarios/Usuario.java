@@ -29,7 +29,10 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal saldo = BigDecimal.ZERO;
+    private BigDecimal saldoSol = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal saldoUsd = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

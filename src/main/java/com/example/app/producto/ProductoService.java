@@ -58,6 +58,7 @@ public class ProductoService {
         dto.setId(producto.getId());
         dto.setNombre(producto.getNombre());
         dto.setTipo(producto.getTipo());
+        dto.setMoneda(producto.getMoneda());
         dto.setRiesgo(producto.getRiesgo());
         dto.setResumen(producto.getDescripcion());
         dto.setDescripcion(producto.getDescripcion());
@@ -73,6 +74,7 @@ public class ProductoService {
                 .id(producto.getId())
                 .nombre(producto.getNombre())
                 .tipo(producto.getTipo())
+                .moneda(producto.getMoneda())
                 .riesgo(producto.getRiesgo())
                 .descripcion(producto.getDescripcion())
                 .beneficio(producto.getBeneficio())

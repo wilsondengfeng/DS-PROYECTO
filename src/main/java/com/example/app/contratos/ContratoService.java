@@ -73,19 +73,21 @@ public class ContratoService {
             BigDecimal diferencia = montoNormalizado.subtract(anterior);
             if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
                 // aumentar inversión
-                if (usuario.getSaldo().compareTo(diferencia) < 0) {
+                if (obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(diferencia) < 0) {
                     throw new IllegalArgumentException("Saldo insuficiente para aumentar la inversión");
                 }
-                usuario.setSaldo(usuario.getSaldo().subtract(diferencia));
+                setSaldoPorMoneda(usuario, producto.getMoneda(),
+                        obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(diferencia));
                 usuarioRepository.save(usuario);
             }
             contratoExistente.get().setMontoInvertido(montoNormalizado);
             return;
         }
-        if (usuario.getSaldo().compareTo(montoNormalizado) < 0) {
+        if (obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(montoNormalizado) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente para contratar este producto");
         }
-        usuario.setSaldo(usuario.getSaldo().subtract(montoNormalizado));
+        setSaldoPorMoneda(usuario, producto.getMoneda(),
+                obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(montoNormalizado));
         usuarioRepository.save(usuario);
         Contrato contrato = new Contrato();
         contrato.setUsuario(usuario);
@@ -113,6 +115,21 @@ public class ContratoService {
             throw new IllegalArgumentException("El usuario no es un cliente");
         }
         return usuario;
+    }
+
+    private BigDecimal obtenerSaldoPorMoneda(Usuario usuario, String moneda) {
+        if ("USD".equalsIgnoreCase(moneda)) {
+            return usuario.getSaldoUsd() == null ? BigDecimal.ZERO : usuario.getSaldoUsd();
+        }
+        return usuario.getSaldoSol() == null ? BigDecimal.ZERO : usuario.getSaldoSol();
+    }
+
+    private void setSaldoPorMoneda(Usuario usuario, String moneda, BigDecimal valor) {
+        if ("USD".equalsIgnoreCase(moneda)) {
+            usuario.setSaldoUsd(valor);
+        } else {
+            usuario.setSaldoSol(valor);
+        }
     }
 
     private BigDecimal normalizarMonto(BigDecimal monto) {

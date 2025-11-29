@@ -47,19 +47,69 @@
       </div>
     </header>
 
-    <div class="container">
+      <div class="container">
       <!-- Balance -->
-      <div class="card">
-        <div class="saldo-header">
-          <div>
-            <h2>Saldo disponible</h2>
-            <p id="saldo-leyenda">Listo para operar</p>
+      <div class="balance-grid">
+        <div class="card balance-card">
+          <div class="saldo-header">
+            <div>
+              <h2>Balance en soles</h2>
+              <p id="saldo-sol-leyenda">Listo para operar</p>
+            </div>
+            <div class="saldo-valor" id="saldo-sol-valor">S/ 0.00</div>
           </div>
-          <div class="saldo-valor" id="saldo-valor">S/ 0.00</div>
+          <div class="saldo-metricas">
+            <div>
+              <p class="saldo-label">Total</p>
+              <p class="saldo-monto" id="saldo-sol-total">S/ 0.00</p>
+            </div>
+            <div>
+              <p class="saldo-label">Invertido</p>
+              <p class="saldo-monto" id="saldo-sol-invertido">S/ 0.00</p>
+            </div>
+            <div>
+              <p class="saldo-label">Disponible</p>
+              <p class="saldo-monto" id="saldo-sol-disponible">S/ 0.00</p>
+            </div>
+          </div>
+          <div class="saldo-barra">
+            <div class="saldo-barra-fill" id="saldo-sol-barra-fill" style="width:0%;"></div>
+          </div>
+          <div class="saldo-actions">
+            <button class="btn btn-primary" onclick="abrirOperacionSaldo('SOL','DEPOSITO')">Depositar</button>
+            <button class="btn btn-secondary" onclick="abrirOperacionSaldo('SOL','RETIRO')">Retirar</button>
+          </div>
         </div>
-        <div class="saldo-actions">
-          <button class="btn btn-primary" onclick="abrirOperacionSaldo('DEPOSITO')">Depositar</button>
-          <button class="btn btn-secondary" onclick="abrirOperacionSaldo('RETIRO')">Retirar</button>
+
+        <div class="card balance-card">
+          <div class="saldo-header">
+            <div>
+              <h2>Balance en dolares</h2>
+              <p id="saldo-usd-leyenda">Listo para operar</p>
+            </div>
+            <div class="saldo-valor" id="saldo-usd-valor">$ 0.00</div>
+          </div>
+          <div class="saldo-metricas">
+            <div>
+              <p class="saldo-label">Total</p>
+              <p class="saldo-monto" id="saldo-usd-total">$ 0.00</p>
+            </div>
+            <div>
+              <p class="saldo-label">Invertido</p>
+              <p class="saldo-monto" id="saldo-usd-invertido">$ 0.00</p>
+            </div>
+            <div>
+              <p class="saldo-label">Disponible</p>
+              <p class="saldo-monto" id="saldo-usd-disponible">$ 0.00</p>
+            </div>
+          </div>
+          <div class="saldo-barra">
+            <div class="saldo-barra-fill" id="saldo-usd-barra-fill" style="width:0%;"></div>
+          </div>
+          <div class="saldo-actions">
+            <button class="btn btn-primary" onclick="abrirOperacionSaldo('USD','DEPOSITO')">Depositar</button>
+            <button class="btn btn-secondary" onclick="abrirOperacionSaldo('USD','RETIRO')">Retirar</button>
+          </div>
         </div>
       </div>
 

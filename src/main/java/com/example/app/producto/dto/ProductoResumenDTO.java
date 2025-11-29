@@ -10,6 +10,7 @@ public class ProductoResumenDTO {
     private Long id;
     private String nombre;
     private TipoProducto tipo;
+    private String moneda;
     private String riesgo;
     private String resumen;
     private String descripcion;

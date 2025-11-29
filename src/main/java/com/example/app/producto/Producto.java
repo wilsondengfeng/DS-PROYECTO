@@ -21,6 +21,9 @@ public class Producto {
     @Column(nullable = false, length = 10)
     private TipoProducto tipo;
 
+    @Column(nullable = false, length = 10)
+    private String moneda = "SOL";
+
     @Column(length = 20)
     private String riesgo;
 

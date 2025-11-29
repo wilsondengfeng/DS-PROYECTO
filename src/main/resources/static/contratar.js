@@ -198,11 +198,17 @@ function construirConfiguracionMonto(producto) {
   };
 }
 
+
+
 function detectarMoneda(producto) {
+  const monedaCampo = (producto.moneda || '').toUpperCase();
+  if (monedaCampo === 'USD' || monedaCampo === 'DOLAR' || monedaCampo === 'DOLARES') {
+    return { simbolo: '$', nombre: 'dolares', esDolar: true };
+  }
   const referencia = `${producto.costo || ''} ${producto.descripcion || ''}`.toLowerCase();
-  const normalizada = referencia.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normalizada = referencia.normalize('NFD').replace(/[̀-ͯ]/g, '');
   if (referencia.includes('usd') || normalizada.includes('dolar')) {
-    return { simbolo: '$', nombre: 'dólares', esDolar: true };
+    return { simbolo: '$', nombre: 'dolares', esDolar: true };
   }
   return { simbolo: 'S/', nombre: 'soles', esDolar: false };
 }
