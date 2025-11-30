@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class ContratoSolicitudDTO {
 
     @NotNull(message = "Debes indicar un monto a invertir")
-    @DecimalMin(value = "100.00", message = "El monto minimo de inversion es 100.00")
+    @DecimalMin(value = "0.00", message = "El monto debe ser 0 o mayor")
     @Digits(integer = 13, fraction = 2, message = "El monto excede el limite permitido")
     private BigDecimal monto;
 }
