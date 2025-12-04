@@ -1,6 +1,7 @@
 const API_BASE = window.location.origin;
 const API_PRODUCTOS = `${API_BASE}/api/clientes/productos`;
 const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/contratos`;
+const API_SALDO_BASE = (clienteId) => `${API_BASE}/api/usuarios/${clienteId}`;
 
 let usuarioActual = null;
 let productosDisponibles = [];
@@ -29,11 +30,13 @@ function verificarSesionContratar() {
 }
 
 async function inicializarContratacion() {
+  // Cargar productos y si la URL especifica un producto, preseleccionarlo
+  // pero mantener siempre el catálogo visible.
   await cargarProductosDisponibles();
   const params = new URLSearchParams(window.location.search);
   const productoId = params.get('productoId');
   if (productoId) {
-    seleccionarProducto(Number(productoId));
+    await seleccionarProducto(Number(productoId));
   }
 }
 
@@ -49,7 +52,7 @@ async function cargarProductosDisponibles() {
     }
 
     const tarjetas = productosDisponibles.map(prod => `
-      <div class="producto-card">
+      <div class="producto-card" data-id="${prod.id}">
         <div class="producto-header">
           <div>
             <div class="producto-nombre">${escapeHtml(prod.nombre)}</div>
@@ -85,6 +88,10 @@ async function cargarProductosDisponibles() {
     `).join('');
 
     contenedor.innerHTML = `<div class="productos-grid">${tarjetas}</div>`;
+    // Si ya hay un producto seleccionado (preselección por URL), resaltar su tarjeta
+    if (productoSeleccionado && productoSeleccionado.id) {
+      highlightSelectedCard(productoSeleccionado.id);
+    }
   } catch (error) {
     console.error('Error al cargar productos para contratación:', error);
     contenedor.innerHTML = '<p class="error-message">No se pudieron cargar los productos. Intenta nuevamente.</p>';
@@ -97,9 +104,25 @@ async function seleccionarProducto(productoId) {
     productoSeleccionado = res.data;
     renderResumenSeleccion();
     document.getElementById('contratar-resumen').scrollIntoView({ behavior: 'smooth' });
+    // Resaltar la tarjeta seleccionada en el catálogo
+    highlightSelectedCard(productoId);
   } catch (error) {
     console.error('Error al obtener detalle del producto:', error);
     alert('No se pudo obtener la información del producto seleccionado.');
+  }
+}
+
+function highlightSelectedCard(productoId) {
+  // Remover clase de cualquier tarjeta previamente seleccionada
+  document.querySelectorAll('#contratar-lista .producto-card').forEach(card => {
+    card.classList.remove('producto-seleccionado');
+  });
+  // Añadir clase a la tarjeta que coincida con el id
+  const tarjeta = document.querySelector(`#contratar-lista .producto-card[data-id='${productoId}']`);
+  if (tarjeta) {
+    tarjeta.classList.add('producto-seleccionado');
+    // Asegurarnos que la tarjeta sea visible en la ventana
+    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
@@ -174,12 +197,24 @@ async function confirmarContratacion() {
     maximumFractionDigits: 2
   }).format(montoNormalizado);
 
-const montoFormateado = new Intl.NumberFormat('es-PE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(montoNormalizado);
 
   try {
+    // Validación en frontend: comprobar saldo disponible en la moneda del producto
+    if (!esSeguro) {
+      const monedaCodigo = (productoSeleccionado.moneda || 'SOL').toUpperCase();
+      try {
+        const saldoRes = await axios.get(API_SALDO_BASE(usuarioActual.id) + '/saldo', { params: { moneda: monedaCodigo } });
+        const saldoDisponible = Number(saldoRes.data?.saldo ?? 0);
+        if (montoNormalizado > saldoDisponible) {
+          alert(`Saldo insuficiente. Tu saldo en ${monedaCodigo} es ${configuracionMontoActual.simbolo}${saldoDisponible.toFixed(2)}.`);
+          return;
+        }
+      } catch (err) {
+        // Si falla la consulta de saldo, dejamos que el backend valide, pero avisamos
+        console.warn('No se pudo obtener saldo para validación previa, se intentará en backend.', err);
+      }
+    }
+
     await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoSeleccionado.id}`, { monto: montoNormalizado });
     alert(`Producto contratado con éxito. Registramos ${simboloMoneda}${montoFormateado} en ${productoSeleccionado.nombre}.`);
     window.location.href = 'cliente.html';

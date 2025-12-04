@@ -893,6 +893,13 @@ main.container > .cta-section {
     border-color: var(--primary-color);
 }
 
+/* Estilo para tarjeta seleccionada (resaltar cuando está preseleccionada) */
+.producto-seleccionado {
+    border-color: var(--secondary-color);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+    transform: translateY(-6px);
+}
+
 .producto-header {
     display: flex;
     justify-content: space-between;
