@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicitudes - Admin | Grupo MegaCash</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>📩 Solicitudes de Información</h1>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="admin.html">← Volver al panel</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Listado de solicitudes</h2>
+      <div id="loading" class="loading" style="display:none;">Cargando solicitudes...</div>
+      <div id="error-message" class="error-message" style="display:none;"></div>
+      <div id="solicitudes-container"></div>
+    </div>
+  </main>
+
+  <script src="solicitudes-admin.js"></script>
+</body>
+</html>
