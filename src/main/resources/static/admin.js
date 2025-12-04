@@ -18,7 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
   verificarSesion();
   configurarLogin();
   configurarFormulario();
-});
+  configurarHeader();
+  configurarToggleForm();
+ });function configurarHeader() {
+  const loginBtn = document.getElementById('loginToggleBtn');
+  if (!loginBtn) return;
+  loginBtn.addEventListener('click', () => {
+    if (usuarioActual) {
+      cerrarSesion();
+    } else {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  });
+}
 
 function verificarSesion() {
   const sesion = localStorage.getItem('usuarioAdmin');
@@ -94,13 +106,28 @@ async function login() {
 function mostrarLogin() {
   document.getElementById('loginModal').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
+  // header login button
+  const loginBtn = document.getElementById('loginToggleBtn');
+  if (loginBtn) loginBtn.textContent = 'Iniciar Sesión';
+  // hide admin actions
+  const actions = document.getElementById('admin-actions');
+  if (actions) actions.style.display = 'none';
+  // hide product card and reset form
+  const prodCard = document.getElementById('producto-card');
+  if (prodCard) prodCard.style.display = 'none';
+  limpiarFormulario();
 }
 
 function mostrarApp() {
   document.getElementById('loginModal').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
+  // header login button becomes 'Cerrar Sesión'
+  const loginBtn = document.getElementById('loginToggleBtn');
+  if (loginBtn) loginBtn.textContent = 'Cerrar Sesión';
+  // show admin actions
+  const actions = document.getElementById('admin-actions');
+  if (actions) actions.style.display = 'flex';
 }
-
 function cerrarSesion() {
   localStorage.removeItem('usuarioAdmin');
   usuarioActual = null;
@@ -179,6 +206,7 @@ async function guardarProducto(event) {
   const producto = {
     nombre: document.getElementById('nombre').value.trim(),
     tipo: document.getElementById('tipo').value,
+    moneda: document.getElementById('moneda').value,
     descripcion: document.getElementById('descripcion').value.trim(),
     beneficio: document.getElementById('beneficio').value.trim() || null,
     costo: document.getElementById('costo').value.trim() || null,
@@ -204,9 +232,30 @@ async function guardarProducto(event) {
     mostrarError('Selecciona un tipo de producto');
     return;
   }
+  if (!producto.moneda) {
+    mostrarError('Selecciona una moneda');
+    return;
+  }
   if (!producto.descripcion) {
     mostrarError('Describe el producto');
     return;
+  }
+
+  // Si es SEGURO, el campo 'costo' debe contener la prima como número
+  if (producto.tipo === 'SEGURO') {
+    if (!producto.costo) {
+      mostrarError('Para seguros, ingresa la prima en el campo Costo (número)');
+      return;
+    }
+    // Limpiar caracteres no numéricos comunes (S/, espacios, texto) y validar
+    const costoLimpio = producto.costo.toString().replace(/[^0-9.-]+/g, '');
+    const prima = parseFloat(costoLimpio);
+    if (Number.isNaN(prima)) {
+      mostrarError('La prima debe ser un número válido (ej. 120)');
+      return;
+    }
+    // Guardar la prima como cadena numérica para el backend
+    producto.costo = prima.toString();
   }
 
   try {
@@ -241,6 +290,7 @@ async function editarProducto(id) {
     document.getElementById('producto-id').value = prod.id;
     document.getElementById('nombre').value = prod.nombre || '';
     document.getElementById('tipo').value = prod.tipo || '';
+    document.getElementById('moneda').value = prod.moneda || '';
     document.getElementById('riesgo').value = prod.riesgo || '';
     toggleCampoRiesgo();
     if (prod.tipo === 'FONDO') {
@@ -256,7 +306,11 @@ async function editarProducto(id) {
     document.getElementById('btn-text').textContent = '💾 Actualizar Producto';
     document.getElementById('btn-cancel').style.display = 'inline-block';
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // show product card (edit mode)
+    const prodCard = document.getElementById('producto-card');
+    if (prodCard) prodCard.style.display = 'block';
+
+    window.scrollTo({ top: prodCard ? prodCard.offsetTop - 20 : 0, behavior: 'smooth' });
   } catch (error) {
     console.error('Error al cargar producto:', error);
     mostrarError('No se pudo cargar el producto para editar');
@@ -308,6 +362,7 @@ function cancelarEdicion() {
 function limpiarFormulario() {
   document.getElementById('producto-form').reset();
   document.getElementById('producto-id').value = '';
+  document.getElementById('moneda').value = '';
   document.getElementById('form-title').textContent = '➕ Agregar Nuevo Producto';
   document.getElementById('btn-text').textContent = '💾 Guardar Producto';
   document.getElementById('btn-cancel').style.display = 'none';
@@ -344,6 +399,23 @@ function escapeHtml(text) {
   if (!text) return '';
   const map = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' };
   return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function configurarToggleForm() {
+  const btn = document.getElementById('btn-toggle-form');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const prodCard = document.getElementById('producto-card');
+    if (!prodCard) return;
+    const isHidden = prodCard.style.display === 'none' || !prodCard.style.display;
+    if (isHidden) {
+      prodCard.style.display = 'block';
+      window.scrollTo({ top: prodCard.offsetTop - 20, behavior: 'smooth' });
+    } else {
+      prodCard.style.display = 'none';
+      limpiarFormulario();
+    }
+  });
 }
 
 // Cerrar modales al hacer clic fuera

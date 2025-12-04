@@ -103,7 +103,21 @@ async function seleccionarProducto(productoId) {
     const res = await axios.get(`${API_PRODUCTOS}/${productoId}`);
     productoSeleccionado = res.data;
     renderResumenSeleccion();
-    document.getElementById('contratar-resumen').scrollIntoView({ behavior: 'smooth' });
+    // Asegurar que el resumen quede visible cuando se llega desde otra página
+    setTimeout(() => {
+      const resumen = document.getElementById('contratar-resumen');
+      if (resumen) {
+        try {
+          resumen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // poner el foco en el primer input del resumen para accesibilidad
+          const input = resumen.querySelector('#montoInversion');
+          if (input) input.focus();
+        } catch (err) {
+          // fallback simple
+          window.location.hash = '#contratar-resumen';
+        }
+      }
+    }, 150);
     // Resaltar la tarjeta seleccionada en el catálogo
     highlightSelectedCard(productoId);
   } catch (error) {
@@ -134,23 +148,24 @@ function renderResumenSeleccion() {
     return;
   }
 
+  const esSeguro = (productoSeleccionado.tipo || '').toUpperCase() === 'SEGURO';
   const configMonto = construirConfiguracionMonto(productoSeleccionado);
   configuracionMontoActual = configMonto;
-  const sugerenciasHTML = configMonto.sugerencias.map(valor => `
+  
+  let inputMontoHTML = '';
+  let premiasInfo = '';
+  
+  if (esSeguro) {
+    const primiaStr = (productoSeleccionado.costo || '').trim();
+    const prima = parseFloat(primiaStr);
+    premiasInfo = !Number.isNaN(prima) ? `<p class="alert alert-info"><strong>Prima Fija:</strong> ${configMonto.simbolo}${prima.toFixed(2)}</p>` : '<p class="alert alert-warning"><strong>Advertencia:</strong> Prima no configurada correctamente.</p>';
+  } else {
+    const sugerenciasHTML = configMonto.sugerencias.map(valor => `
       <button type="button" class="btn btn-secondary btn-sugerencia" onclick="seleccionarMontoSugerido(${valor})">
         ${configMonto.simbolo}${formatearNumero(valor)}
       </button>
     `).join('');
-
-  contenedor.innerHTML = `
-    <h3>${escapeHtml(productoSeleccionado.nombre)}</h3>
-    <p><strong>Tipo:</strong> ${productoSeleccionado.tipo}</p>
-    ${productoSeleccionado.tipo === 'FONDO' ? `<p><strong>Riesgo:</strong> ${escapeHtml(productoSeleccionado.riesgo || 'Sin definir')}</p>` : ''}
-    <p><strong>Descripción:</strong> ${escapeHtml(productoSeleccionado.descripcion || 'Sin descripción')}</p>
-    <p><strong>Costo:</strong> ${escapeHtml(productoSeleccionado.costo || 'No especificado')}</p>
-    <p><strong>Moneda:</strong> ${productoSeleccionado.moneda || (moneda.esDolar ? "USD" : "SOL")}</p>
-    <p><strong>Beneficio:</strong> ${escapeHtml(productoSeleccionado.beneficio || 'No especificado')}</p>
-    <p><strong>Plazo:</strong> ${escapeHtml(productoSeleccionado.plazo || 'No especificado')}</p>
+    inputMontoHTML = `
     <div class="form-group">
       <label for="montoInversion">¿Cuánto deseas invertir en este fondo? (${configMonto.nombreMoneda})</label>
       <input
@@ -164,6 +179,19 @@ function renderResumenSeleccion() {
       <small class="text-muted">${configMonto.mensaje}</small>
       <div class="monto-sugerencias">${sugerenciasHTML}</div>
     </div>
+    `;
+  }
+
+  contenedor.innerHTML = `
+    <h3>${escapeHtml(productoSeleccionado.nombre)}</h3>
+    <p><strong>Tipo:</strong> ${productoSeleccionado.tipo}</p>
+    ${productoSeleccionado.tipo === 'FONDO' ? `<p><strong>Riesgo:</strong> ${escapeHtml(productoSeleccionado.riesgo || 'Sin definir')}</p>` : ''}
+    <p><strong>Descripción:</strong> ${escapeHtml(productoSeleccionado.descripcion || 'Sin descripción')}</p>
+    ${esSeguro ? premiasInfo : `<p><strong>Costo:</strong> ${escapeHtml(productoSeleccionado.costo || 'No especificado')}</p>`}
+    <p><strong>Moneda:</strong> ${productoSeleccionado.moneda || (moneda.esDolar ? "USD" : "SOL")}</p>
+    <p><strong>Beneficio:</strong> ${escapeHtml(productoSeleccionado.beneficio || 'No especificado')}</p>
+    <p><strong>Plazo:</strong> ${escapeHtml(productoSeleccionado.plazo || 'No especificado')}</p>
+    ${inputMontoHTML}
     <div class="detalle-actions">
       <button class="btn btn-success" onclick="confirmarContratacion()">Confirmar contratación</button>
       <a class="btn btn-secondary" href="cliente.html">Cancelar</a>
@@ -177,9 +205,22 @@ async function confirmarContratacion() {
   const minimo = configuracionMontoActual?.min || 100;
   const simboloMoneda = configuracionMontoActual?.simbolo || 'S/';
   const esSeguro = (productoSeleccionado.tipo || '').toUpperCase() === 'SEGURO';
-  const monto = esSeguro ? 0 : parseFloat(inputMonto?.value);
+  
+  let monto;
+  if (esSeguro) {
+    // Para seguros, extraer la prima del campo costo
+    const premiaStr = (productoSeleccionado.costo || '').trim();
+    const primaParsed = parseFloat(premiaStr);
+    if (Number.isNaN(primaParsed)) {
+      alert('Error: El seguro no tiene una prima válida configurada.');
+      return;
+    }
+    monto = primaParsed;
+  } else {
+    monto = parseFloat(inputMonto?.value);
+  }
 
-  if (!inputMonto || Number.isNaN(monto)) {
+  if (Number.isNaN(monto)) {
     alert('Ingresa el monto que deseas invertir.');
     return;
   }
@@ -200,23 +241,23 @@ async function confirmarContratacion() {
 
   try {
     // Validación en frontend: comprobar saldo disponible en la moneda del producto
-    if (!esSeguro) {
-      const monedaCodigo = (productoSeleccionado.moneda || 'SOL').toUpperCase();
-      try {
-        const saldoRes = await axios.get(API_SALDO_BASE(usuarioActual.id) + '/saldo', { params: { moneda: monedaCodigo } });
-        const saldoDisponible = Number(saldoRes.data?.saldo ?? 0);
-        if (montoNormalizado > saldoDisponible) {
-          alert(`Saldo insuficiente. Tu saldo en ${monedaCodigo} es ${configuracionMontoActual.simbolo}${saldoDisponible.toFixed(2)}.`);
-          return;
-        }
-      } catch (err) {
-        // Si falla la consulta de saldo, dejamos que el backend valide, pero avisamos
-        console.warn('No se pudo obtener saldo para validación previa, se intentará en backend.', err);
+    const monedaCodigo = (productoSeleccionado.moneda || 'SOL').toUpperCase();
+    try {
+      const saldoRes = await axios.get(API_SALDO_BASE(usuarioActual.id) + '/saldo', { params: { moneda: monedaCodigo } });
+      const saldoDisponible = Number(saldoRes.data?.saldo ?? 0);
+      if (montoNormalizado > saldoDisponible) {
+        const tipo = esSeguro ? 'prima del seguro' : 'inversión';
+        alert(`Saldo insuficiente. Tu saldo en ${monedaCodigo} es ${configuracionMontoActual.simbolo}${saldoDisponible.toFixed(2)}. La ${tipo} requiere ${configuracionMontoActual.simbolo}${montoNormalizado.toFixed(2)}.`);
+        return;
       }
+    } catch (err) {
+      // Si falla la consulta de saldo, dejamos que el backend valide, pero avisamos
+      console.warn('No se pudo obtener saldo para validación previa, se intentará en backend.', err);
     }
 
     await axios.post(`${API_CONTRATOS(usuarioActual.id)}/${productoSeleccionado.id}`, { monto: montoNormalizado });
-    alert(`Producto contratado con éxito. Registramos ${simboloMoneda}${montoFormateado} en ${productoSeleccionado.nombre}.`);
+    const tipoMsg = esSeguro ? 'prima' : 'inversión';
+    alert(`${productoSeleccionado.nombre} contratado con éxito. Se debitó ${simboloMoneda}${montoFormateado} como ${tipoMsg}.`);
     window.location.href = 'cliente.html';
   } catch (error) {
     console.error('Error al contratar producto:', error);

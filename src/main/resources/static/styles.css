@@ -310,6 +310,70 @@ body.home-page {
     padding: 0 20px;
 }
 
+/* Admin actions bar */
+#admin-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+    border: 2px solid #dbeafe;
+    margin-bottom: 20px;
+}
+
+#admin-actions .btn {
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-admin-contratos {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.btn-admin-contratos:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.btn-admin-solicitudes {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.btn-admin-solicitudes:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-admin-metricas {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.btn-admin-metricas:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
+.btn-admin-movimientos {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.btn-admin-movimientos:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+}
+
 /* Section Styles */
 main.container > section:not(.cta-section) {
     padding: 60px;
@@ -1170,6 +1234,131 @@ main.container > .cta-section {
     border-radius: 12px;
     text-align: center;
     box-shadow: var(--shadow-md);
+}
+
+/* Product metric compact card */
+.producto-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.producto-card-metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.producto-card-metric .left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.producto-card-metric .nombre {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+.producto-card-metric .monto {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.producto-card-metric .tipo-badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+.producto-card-metric .visitas {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-light);
+    min-width: 64px;
+    text-align: right;
+}
+
+/* Movimientos list */
+.movimientos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.movimiento-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    align-items: center;
+}
+
+.movimiento-left {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width: 0;
+}
+.movimiento-meta {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+.movimiento-amount {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+.movimiento-type-CONTRATAR, .movimiento-type-AUMENTAR { color: #1d4ed8; }
+.movimiento-type-DISMINUIR { color: #b91c1c; }
+.movimiento-type-DEPOSITO { color: #15803d; }
+.movimiento-type-RETIRO { color: #dc2626; }
+
+.movimiento-right {
+    text-align: right;
+    min-width:120px;
+}
+
+.movimiento-separator {
+    height:1px;
+    background: var(--border-color);
+    margin:6px 0 0 0;
+}
+
+.producto-card-metric.fondo {
+    border-left: 6px solid #3b82f6; /* blue */
+}
+.producto-card-metric.seguro {
+    border-left: 6px solid #16a34a; /* green */
+}
+
+.metrics-controls {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+}
+
+.porcentaje-bar {
+    height: 12px;
+    background: var(--border-color);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.porcentaje-fill-fondo {
+    height:100%;
+    background: linear-gradient(90deg,#3b82f6,#60a5fa);
+}
+.porcentaje-fill-seguro {
+    height:100%;
+    background: linear-gradient(90deg,#16a34a,#34d399);
 }
 
 .metrica-icon {

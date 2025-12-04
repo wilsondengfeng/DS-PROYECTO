@@ -122,8 +122,7 @@ async function cargarProductos(filtros = {}) {
 
   try {
     const tipoSeleccionado = filtros.tipo || (pestañaActual === 'fondos' ? 'FONDO' : 'SEGURO');
-    const soloActivosSeleccion = filtros.soloActivos ??
-      (document.getElementById('filtroSoloActivos')?.checked ?? true);
+    const soloActivosSeleccion = filtros.soloActivos ?? true;
     const textoBusqueda = filtros.texto ??
       document.getElementById('filtroBusqueda')?.value.trim();
 
@@ -235,7 +234,7 @@ function aplicarFiltros() {
   const filtros = {
     tipo: pestañaActual === 'fondos' ? 'FONDO' : 'SEGURO',
     texto: document.getElementById('filtroBusqueda')?.value.trim(),
-    soloActivos: document.getElementById('filtroSoloActivos')?.checked ?? true
+    soloActivos: true
   };
 
   cargarProductos(filtros);
@@ -244,8 +243,6 @@ function aplicarFiltros() {
 function limpiarFiltros() {
   const busqueda = document.getElementById('filtroBusqueda');
   if (busqueda) busqueda.value = '';
-  const soloActivos = document.getElementById('filtroSoloActivos');
-  if (soloActivos) soloActivos.checked = true;
   productosSeleccionados.clear();
 
   aplicarFiltros(); // Mantener el tipo de pestaña activa
@@ -256,9 +253,6 @@ function mostrarTodosFondos() {
 
   const busqueda = document.getElementById('filtroBusqueda');
   if (busqueda) busqueda.value = '';
-  const soloActivos = document.getElementById('filtroSoloActivos');
-  if (soloActivos) soloActivos.checked = true;
-
   cargarProductos({ tipo: 'FONDO', texto: '', soloActivos: true });
 }
 
@@ -275,6 +269,7 @@ async function verDetalle(id) {
         <div class="detalle-section">
           <h3>📋 Información General</h3>
           <p><strong>Tipo:</strong> ${prod.tipo}</p>
+          <p><strong>Visitas:</strong> ${prod.visitas ?? 0}</p>
           ${prod.tipo === 'FONDO' ? `<p><strong>Riesgo:</strong> ${escapeHtml(prod.riesgo || 'Sin definir')}</p>` : ''}
           <p><strong>Descripción:</strong> ${escapeHtml(prod.descripcion || 'Sin descripción')}</p>
         </div>

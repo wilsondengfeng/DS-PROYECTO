@@ -10,6 +10,7 @@
 -- Forzar codificacion UTF-8 para evitar caracteres corruptos
 SET client_encoding = 'UTF8';
 
+DROP TABLE IF EXISTS movimientos;
 DROP TABLE IF EXISTS solicitudes_informacion;
 DROP TABLE IF EXISTS contratos;
 DROP TABLE IF EXISTS productos;
@@ -33,11 +34,22 @@ CREATE TABLE productos (
     tipo VARCHAR(10) NOT NULL,
     moneda VARCHAR(10) NOT NULL DEFAULT 'SOL',
     riesgo VARCHAR(20),
+    visitas INTEGER NOT NULL DEFAULT 0,
     descripcion VARCHAR(500) NOT NULL,
     beneficio VARCHAR(500),
     costo VARCHAR(100),
     plazo VARCHAR(100),
     activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE movimientos (
+    id SERIAL PRIMARY KEY,
+    usuario_id BIGINT NOT NULL REFERENCES usuarios(id),
+    producto_id BIGINT REFERENCES productos(id),
+    tipo VARCHAR(20) NOT NULL,
+    monto NUMERIC(15,2) NOT NULL,
+    detalle VARCHAR(500),
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE contratos (
@@ -72,11 +84,11 @@ INSERT INTO productos (nombre, tipo, moneda, riesgo, descripcion, beneficio, cos
     ('FDF IF Real Estate Student Accommodation FMIV', 'FONDO', 'USD', 'MEDIO', 'Es nuestra alternativa de inversion inmobiliaria enfocada en la renta estudiantil global. Busca generar ganancias por la revalorizacion de los inmuebles y los flujos constantes de renta.', 'Rentabilidad nominal a octubre 2025* (con dividendo): 4.83%. Registrate en ERNI y abrelo aqui.', 'Moneda: Dolares. Enfoque en renta estudiantil global.', 'Te sugerimos mantener la inversion al menos 3 anos.', TRUE),
     ('IF Futuro Seguro Dolares FMIV', 'FONDO', 'USD', 'MEDIO', 'Es nuestra alternativa moderada, en dolares, que busca superar a las alternativas de jubilacion mediante una mezcla de renta fija y acciones globales.', 'Rentabilidad nominal a octubre 2025*: 10.74%. Registrate en ERNI y abrelo aqui.', 'Moneda: Dolares. Portafolio mixto orientado a jubilacion.', 'Te sugerimos mantener la inversion al menos 5 anos.', TRUE),
     ('IF Acciones FMIV', 'FONDO', 'SOL', 'ALTO', 'Es nuestra alternativa audaz, en soles. Invierte hasta un 100% en acciones de la bolsa peruana y asume riesgo alto para buscar valorizacion.', 'Rentabilidad nominal a octubre 2025*: 20.73%. Registrate en ERNI y abrelo aqui.', 'Moneda: Soles. Exposicion total a renta variable local.', 'Mantener la inversion al menos 5 anos para buscar mayores retornos.', TRUE),
-    ('Seguro Vida Integral', 'SEGURO', 'SOL', NULL, 'Cobertura integral de vida y salud para adultos jovenes.', 'Telemedicina, asistencias y cobertura familiar.', 'Prima mensual desde S/ 120', 'Contratacion anual renovable', TRUE),
-    ('Seguro Salud Familiar Plus', 'SEGURO', 'SOL', NULL, 'Cobertura hospitalaria y ambulatoria para todo el hogar.', 'Red de clinicas premium y telemedicina ilimitada.', 'Prima mensual desde S/ 180', 'Contrato anual renovable', TRUE),
-    ('Seguro Auto Ejecutivo', 'SEGURO', 'SOL', NULL, 'Proteccion total para flotas de ejecutivos y gerentes.', 'Auto de reemplazo y asistencia en carretera 24/7.', 'Prima mensual desde S/ 220', 'Contrato anual renovable', TRUE),
-    ('Seguro Hogar Premium', 'SEGURO', 'SOL', NULL, 'Cobertura contra incendios, robos y danos por agua.', 'Incluye asistencia de urgencia y monitoreo IoT.', 'Prima mensual desde S/ 95', 'Contrato anual renovable', TRUE),
-    ('Seguro Cyber Empresas', 'SEGURO', 'SOL', NULL, 'Proteccion ante brechas de datos y ataques ransomware.', 'Respuesta forense, abogados y comunicacion de crisis.', 'Prima mensual desde S/ 600', 'Contrato anual renovable', TRUE);
+    ('Seguro Vida Integral', 'SEGURO', 'SOL', NULL, 'Cobertura integral de vida y salud para adultos jovenes.', 'Telemedicina, asistencias y cobertura familiar.', '120', 'Contratacion anual renovable', TRUE),
+    ('Seguro Salud Familiar Plus', 'SEGURO', 'SOL', NULL, 'Cobertura hospitalaria y ambulatoria para todo el hogar.', 'Red de clinicas premium y telemedicina ilimitada.', '180', 'Contrato anual renovable', TRUE),
+    ('Seguro Auto Ejecutivo', 'SEGURO', 'SOL', NULL, 'Proteccion total para flotas de ejecutivos y gerentes.', 'Auto de reemplazo y asistencia en carretera 24/7.', '220', 'Contrato anual renovable', TRUE),
+    ('Seguro Hogar Premium', 'SEGURO', 'SOL', NULL, 'Cobertura contra incendios, robos y danos por agua.', 'Incluye asistencia de urgencia y monitoreo IoT.', '95', 'Contrato anual renovable', TRUE),
+    ('Seguro Cyber Empresas', 'SEGURO', 'SOL', NULL, 'Proteccion ante brechas de datos y ataques ransomware.', 'Respuesta forense, abogados y comunicacion de crisis.', '600', 'Contrato anual renovable', TRUE);
 
 INSERT INTO contratos (usuario_id, producto_id, monto_invertido) VALUES
     (1, 1, 12000.00),

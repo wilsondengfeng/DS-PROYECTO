@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css"/>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-<body>
+<body class="admin-page">
   <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="modal-content modal-login">
@@ -32,26 +32,31 @@
     </div>
   </div>
 
-  <!-- Main App (hidden until login) -->
-  <div id="mainApp" style="display:none;">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="container">
-        <div class="header-content">
-          <h1>Grupo MegaCash | Panel Ejecutivo</h1>
-          <div class="header-actions">
-            <a class="btn btn-secondary" href="contratos-admin.html">📑 Ver Contratos</a>
-            <a class="btn btn-secondary" href="solicitudes-admin.html">📩 Solicitudes</a>
-            <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
-          </div>
+  <!-- Header (always visible) -->
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>Grupo MegaCash | Panel Ejecutivo</h1>
+        <div>
+          <button id="loginToggleBtn" class="btn btn-primary">Iniciar Sesión</button>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
 
+  <!-- Main App (hidden until login) -->
+  <div id="mainApp" style="display:none;">
     <div class="container">
-      <!-- Formulario Crear/Editar Producto -->
-      <div class="card">
-        <h2 id="form-title">➕ Agregar Nuevo Producto</h2>
+      <div id="admin-actions" style="display:none;">
+        <a class="btn btn-admin-contratos" href="contratos-admin.html">📑 Ver Contratos</a>
+        <a class="btn btn-admin-solicitudes" href="solicitudes-admin.html">📩 Solicitudes</a>
+        <a class="btn btn-admin-metricas" href="metrics-admin.html">📊 Métricas</a>
+        <a class="btn btn-admin-movimientos" href="movimientos-admin.html">🧾 Movimientos</a>
+      </div>
+      <!-- Formulario Crear/Editar Producto (collapsed by default) -->
+      <button id="btn-toggle-form" class="btn btn-primary" style="margin-bottom:12px;">✅ Agregar Nuevo Producto</button>
+      <div id="producto-card" class="card" style="display:none;">
+        <h2 id="form-title">✏️ Agregar Nuevo Producto</h2>
         <form id="producto-form">
           <input type="hidden" id="producto-id"/>
 
@@ -77,6 +82,14 @@
                 <option value="ALTO">Alto</option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="moneda">Moneda *</label>
+              <select id="moneda" required>
+                <option value="">Selecciona...</option>
+                <option value="SOL">Soles (SOL)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
@@ -91,8 +104,9 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="costo">Costo (texto libre)</label>
+              <label for="costo">Costo</label>
               <input type="text" id="costo" placeholder="Ej: Aporte mensual desde S/ 150" maxlength="100"/>
+              <small class="text-muted">Nota: si el producto es un <strong>Seguro</strong>, ingresa aquí la prima como número (ej. <code>120</code>). Para fondos puedes usar texto descriptivo.</small>
             </div>
             <div class="form-group">
               <label for="plazo">Plazo</label>

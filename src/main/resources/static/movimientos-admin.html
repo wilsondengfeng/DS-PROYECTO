@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movimientos - Admin | Grupo MegaCash</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>📋 Movimientos</h1>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="admin.html">← Volver al panel</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Historial de movimientos</h2>
+      <div style="margin-bottom:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <label>Filtrar por usuario ID: <input id="usuarioId" type="number" min="1" style="width:100px;"/></label>
+        <button id="btn-filtrar" class="btn">Filtrar</button>
+        <button id="btn-todos" class="btn btn-secondary">Ver todos</button>
+        <label>Tipo:
+          <select id="filter-tipo">
+            <option value="">Todos</option>
+            <option value="CONTRATAR">CONTRATAR</option>
+            <option value="AUMENTAR">AUMENTAR</option>
+            <option value="DISMINUIR">DISMINUIR</option>
+            <option value="DEPOSITO">DEPOSITO</option>
+            <option value="RETIRO">RETIRO</option>
+          </select>
+        </label>
+        <label>Páginas por tabla:
+          <select id="page-size">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+          </select>
+        </label>
+      </div>
+      <div id="loading" class="loading" style="display:none">Cargando movimientos...</div>
+      <div id="error-message" class="error-message" style="display:none"></div>
+        <div id="movimientos-container">
+          <div class="movimientos-list" id="movimientos-list"></div>
+          <div style="display:flex; justify-content:center; gap:8px; margin-top:12px;">
+            <button id="prev-page" class="btn btn-secondary">Anterior</button>
+            <div id="page-info" style="align-self:center"></div>
+            <button id="next-page" class="btn">Siguiente</button>
+          </div>
+        </div>
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:12px;">
+        <button id="prev-page" class="btn btn-secondary">Anterior</button>
+        <div id="page-info" style="align-self:center"></div>
+        <button id="next-page" class="btn">Siguiente</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="movimientos-admin.js"></script>
+</body>
+</html>

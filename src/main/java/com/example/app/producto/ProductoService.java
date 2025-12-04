@@ -29,11 +29,14 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ProductoDetalleDTO obtenerDetalle(Long id) {
         Producto producto = productoRepository.findById(id)
                 .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+        // Aumentar contador de visitas y persistir
+        producto.setVisitas((producto.getVisitas() == null ? 0 : producto.getVisitas()) + 1);
+        productoRepository.save(producto);
         return toDetalle(producto);
     }
 
@@ -66,6 +69,7 @@ public class ProductoService {
         dto.setCosto(producto.getCosto());
         dto.setPlazo(producto.getPlazo());
         dto.setActivo(producto.isActivo());
+        dto.setVisitas(producto.getVisitas());
         return dto;
     }
 
@@ -81,6 +85,7 @@ public class ProductoService {
                 .costo(producto.getCosto())
                 .plazo(producto.getPlazo())
                 .activo(producto.isActivo())
+            .visitas(producto.getVisitas())
                 .build();
     }
 }

@@ -28,6 +28,7 @@ public class ContratoService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final ProductoService productoService;
+    private final com.example.app.movimientos.MovimientoRepository movimientoRepository;
 
     @Transactional(readOnly = true)
     public List<ProductoResumenDTO> listar(Long usuarioId) {
@@ -87,24 +88,56 @@ public class ContratoService {
                 setSaldoPorMoneda(usuario, producto.getMoneda(),
                         obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(diferencia));
                 usuarioRepository.save(usuario);
+                com.example.app.movimientos.Movimiento mov = new com.example.app.movimientos.Movimiento();
+                mov.setUsuario(usuario);
+                mov.setProducto(producto);
+                mov.setTipo(com.example.app.movimientos.MovimientoTipo.AUMENTAR);
+                mov.setMonto(diferencia);
+                mov.setDetalle("Aumento de contrato para producto " + producto.getNombre());
+                movimientoRepository.save(mov);
             } else if (diferencia.compareTo(BigDecimal.ZERO) < 0) {
                 // disminuir inversión: se devuelve la diferencia al saldo
                 setSaldoPorMoneda(usuario, producto.getMoneda(),
                         obtenerSaldoPorMoneda(usuario, producto.getMoneda()).add(diferencia.abs()));
                 usuarioRepository.save(usuario);
+                com.example.app.movimientos.Movimiento mov = new com.example.app.movimientos.Movimiento();
+                mov.setUsuario(usuario);
+                mov.setProducto(producto);
+                mov.setTipo(com.example.app.movimientos.MovimientoTipo.DISMINUIR);
+                mov.setMonto(diferencia.abs());
+                mov.setDetalle("Disminución de contrato para producto " + producto.getNombre());
+                movimientoRepository.save(mov);
             }
             contratoExistente.get().setMontoInvertido(montoNormalizado);
             contratoRepository.save(contratoExistente.get());
             return;
         }
-        if (!esSeguro && obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(montoNormalizado) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para contratar este producto");
+        // Para ambos tipos: validar y deducir del saldo
+        if (obtenerSaldoPorMoneda(usuario, producto.getMoneda()).compareTo(montoNormalizado) < 0) {
+            String tipoProducto = esSeguro ? "seguro" : "producto";
+            throw new IllegalArgumentException("Saldo insuficiente para contratar este " + tipoProducto);
         }
-        if (!esSeguro) {
-            setSaldoPorMoneda(usuario, producto.getMoneda(),
-                    obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(montoNormalizado));
-            usuarioRepository.save(usuario);
+        
+        // Deducir monto del saldo
+        setSaldoPorMoneda(usuario, producto.getMoneda(),
+                obtenerSaldoPorMoneda(usuario, producto.getMoneda()).subtract(montoNormalizado));
+        usuarioRepository.save(usuario);
+        
+        // Registrar movimiento
+        com.example.app.movimientos.Movimiento mov = new com.example.app.movimientos.Movimiento();
+        mov.setUsuario(usuario);
+        mov.setProducto(producto);
+        mov.setTipo(com.example.app.movimientos.MovimientoTipo.CONTRATAR);
+        mov.setMonto(montoNormalizado);
+        String detalleMsg = esSeguro ? "Prima de seguro para " : "Contratación de producto ";
+        mov.setDetalle(detalleMsg + producto.getNombre());
+        movimientoRepository.save(mov);
+        
+        // Para seguros, establecer montoInvertido a la prima fija
+        if (esSeguro) {
+            montoNormalizado = montoNormalizado;
         }
+        
         Contrato contrato = new Contrato();
         contrato.setUsuario(usuario);
         contrato.setProducto(producto);

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Métricas - Admin | Grupo MegaCash</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1>📊 Métricas</h1>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="admin.html">← Volver al panel</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Visitas y Montos Contratados</h2>
+      <div id="loading" class="loading" style="display:none;">Cargando métricas...</div>
+      <div id="error-message" class="error-message" style="display:none;"></div>
+
+      <section id="resumen-total" style="margin-bottom:20px;"></section>
+
+      <section class="card" id="por-tipo-card">
+        <h3>Monto contratado por tipo</h3>
+        <div class="metrics-controls">
+          <div style="flex:1">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div style="min-width:140px;"><strong>Distribución</strong></div>
+              <div style="flex:1">
+                <div class="porcentaje-bar">
+                  <div id="fill-fondo" class="porcentaje-fill-fondo" style="width:0%"></div>
+                  <div id="fill-seguro" class="porcentaje-fill-seguro" style="width:0%; position:relative; left:-100%"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-top:6px;">
+                  <div id="label-fondo">Fondos: 0%</div>
+                  <div id="label-seguro">Seguros: 0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label>Ordenar productos: 
+              <select id="sort-products">
+                <option value="default">Por defecto</option>
+                <option value="visitas_desc">Más visitas</option>
+                <option value="monto_desc">Mayor monto</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div id="por-tipo"></div>
+      </section>
+
+      <section class="card" id="por-producto-card">
+        <h3>Métricas por producto</h3>
+        <div id="por-producto" class="producto-metric-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="metrics-admin.js"></script>
+</body>
+</html>

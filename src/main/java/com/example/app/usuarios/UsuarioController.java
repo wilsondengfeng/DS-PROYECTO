@@ -2,6 +2,9 @@ package com.example.app.usuarios;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.example.app.movimientos.Movimiento;
+import com.example.app.movimientos.MovimientoRepository;
+import com.example.app.movimientos.MovimientoTipo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +20,8 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private MovimientoRepository movimientoRepository;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
@@ -74,6 +79,12 @@ public class UsuarioController {
                 BigDecimal saldoActual = getSaldoPorMoneda(u, moneda).add(req.getMonto());
                 setSaldoPorMoneda(u, moneda, saldoActual);
                 usuarioRepository.save(u);
+                Movimiento mov = new Movimiento();
+                mov.setUsuario(u);
+                mov.setTipo(MovimientoTipo.DEPOSITO);
+                mov.setMonto(req.getMonto());
+                mov.setDetalle("Depósito en " + moneda.toUpperCase());
+                movimientoRepository.save(mov);
                 return ResponseEntity.ok(Map.<String, Object>of("saldo", saldoActual, "moneda", moneda.toUpperCase()));
             })
             .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -98,6 +109,12 @@ public class UsuarioController {
                 saldoActual = saldoActual.subtract(req.getMonto());
                 setSaldoPorMoneda(u, moneda, saldoActual);
                 usuarioRepository.save(u);
+                Movimiento mov = new Movimiento();
+                mov.setUsuario(u);
+                mov.setTipo(MovimientoTipo.RETIRO);
+                mov.setMonto(req.getMonto());
+                mov.setDetalle("Retiro en " + moneda.toUpperCase());
+                movimientoRepository.save(mov);
                 return ResponseEntity.ok(Map.<String, Object>of("saldo", saldoActual, "moneda", moneda.toUpperCase()));
             })
             .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -41,4 +41,7 @@ public class Producto {
 
     @Column(nullable = false)
     private boolean activo = true;
+
+    @Column(nullable = false)
+    private Integer visitas = 0;
 }

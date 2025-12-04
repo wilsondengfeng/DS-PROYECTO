@@ -17,4 +17,5 @@ public class ProductoDetalleDTO {
     String costo;
     String plazo;
     boolean activo;
+    Integer visitas;
 }

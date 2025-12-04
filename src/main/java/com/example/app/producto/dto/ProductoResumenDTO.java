@@ -19,4 +19,5 @@ public class ProductoResumenDTO {
     private String plazo;
     private boolean activo;
     private BigDecimal montoInvertido;
+    private Integer visitas;
 }
