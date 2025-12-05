@@ -185,6 +185,25 @@
         <div id="comparacionContainer"></div>
       </div>
     </div>
+
+    <!-- Chatbot flotante -->
+    <div id="chatbot-widget" class="chatbot-widget">
+      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Abrir chat de ayuda">💬</button>
+      <div id="chatbot-panel" class="chatbot-panel">
+        <div class="chatbot-header">
+          <div>
+            <h3>Asesor Virtual</h3>
+            <p>Recomienda fondos/seguros y estima primas.</p>
+          </div>
+          <button class="chatbot-close" aria-label="Cerrar chat">×</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages" aria-live="polite"></div>
+        <form id="chatbot-form" class="chatbot-form">
+          <input id="chatbot-input" type="text" placeholder="Ej: Soy perfil medio, 35 años" autocomplete="off" required />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+    </div>
   </div>
 
   <script src="cliente.js"></script>

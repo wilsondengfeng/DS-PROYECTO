@@ -23,6 +23,7 @@ let contratosIds = new Set();
 let saldoSol = 0;
 let saldoUsd = 0;
 let pestañaActual = 'fondos'; // 'fondos' o 'seguros'
+let catalogoCache = [];
 
 // Configuración de Axios
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -135,6 +136,7 @@ async function cargarProductos(filtros = {}) {
     }
 
     const res = await axios.get(API_PRODUCTOS, { params: axiosParams });
+    catalogoCache = Array.isArray(res.data) ? res.data : [];
     mostrarProductos(res.data);
   } catch (error) {
     console.error('Error al cargar productos:', error);
@@ -865,4 +867,167 @@ if (usuarioActual) {
   cambiarPestaña('fondos'); // Iniciar con fondos
   cargarContratos(true);
   cargarSaldo();
+}
+
+// ===== CHATBOT =====
+document.addEventListener('DOMContentLoaded', () => {
+  inicializarChatbot();
+});
+
+function inicializarChatbot() {
+  const toggle = document.getElementById('chatbot-toggle');
+  const panel = document.getElementById('chatbot-panel');
+  const closeBtn = panel?.querySelector('.chatbot-close');
+  const form = document.getElementById('chatbot-form');
+  const input = document.getElementById('chatbot-input');
+  const messages = document.getElementById('chatbot-messages');
+
+  if (!toggle || !panel || !form || !input || !messages) return;
+
+  const enviar = (texto, rol = 'bot') => {
+    const burbuja = document.createElement('div');
+    burbuja.className = `chatbot-bubble ${rol}`;
+    burbuja.textContent = texto;
+    messages.appendChild(burbuja);
+    messages.scrollTop = messages.scrollHeight;
+  };
+
+  const saludar = () => {
+    enviar('Hola, soy tu asesor virtual. Puedo sugerir fondos/seguros y estimar primas de Vida, Salud, Vehicular o SOAT. Cuéntame tu edad, perfil (bajo/medio/alto) o modelo/año del auto.');
+  };
+
+  toggle.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      if (!messages.childElementCount) saludar();
+      input.focus();
+    }
+  });
+  closeBtn?.addEventListener('click', () => panel.classList.remove('open'));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const texto = input.value.trim();
+    if (!texto) return;
+    enviar(texto, 'user');
+    input.value = '';
+    procesarChatbot(texto, enviar);
+  });
+}
+
+function procesarChatbot(texto, enviar) {
+  const lower = texto.toLowerCase();
+
+  // Detectar edad y modelo/año básico
+  const edadMatch = lower.match(/(\d{2})\s*a[nñ]os?/);
+  const edad = edadMatch ? parseInt(edadMatch[1], 10) : null;
+  const anoMatch = lower.match(/(20\d{2}|19\d{2})/);
+  const ano = anoMatch ? parseInt(anoMatch[1], 10) : null;
+
+  const esVehicular = lower.includes('vehicular') || lower.includes('auto') || lower.includes('carro');
+  const esSoat = lower.includes('soat');
+  const esSalud = lower.includes('salud');
+  const esVida = lower.includes('vida');
+  const perfil = lower.includes('alto') ? 'ALTO' : lower.includes('medio') ? 'MEDIO' : lower.includes('bajo') ? 'BAJO' : null;
+
+  if (esVehicular || esSoat) {
+    const prima = estimarPrimaVehicularOsoat({ esSoat, ano, texto: lower });
+    const nombre = esSoat ? 'SOAT' : 'Seguro Vehicular';
+    const baseMsg = prima
+      ? `${nombre} estimado: S/ ${prima.toFixed(2)} al mes.`
+      : `${nombre} estimado: S/ 30 - 200 (SOAT) o S/ 400 - 2,000 (Vehicular) según modelo y año.`;
+    const detalle = ano ? `Año ${ano}.` : 'Agrega modelo y año (ej: Corolla 2019) para mayor precisión.';
+    const recomendacion = sugerirProductosPorTipo('SEGURO', esSoat ? 'soat' : 'vehicular');
+    enviar(`${baseMsg} ${detalle}\n${recomendacion}`);
+    return;
+  }
+
+  if (esSalud || esVida) {
+    const prima = estimarPrimaSaludVida({ esVida, edad });
+    const nombre = esVida ? 'Seguro de Vida' : 'Seguro de Salud';
+    const baseMsg = prima
+      ? `${nombre} estimado: S/ ${prima.toFixed(2)} al mes.`
+      : `${nombre} típico: Vida S/ 50-500 según edad; Salud S/ 200-1500 según edad/plan.`;
+    const recomendacion = sugerirProductosPorTipo('SEGURO', esVida ? 'vida' : 'salud');
+    enviar(`${baseMsg}\n${recomendacion}`);
+    return;
+  }
+
+  // Fondos por perfil
+  if (perfil) {
+    const recomendacion = sugerirFondosPorPerfil(perfil);
+    enviar(recomendacion);
+    return;
+  }
+
+  // fallback general
+  enviar('Puedo ayudarte si me dices: tu edad y si buscas Vida/Salud, o el modelo/año de tu auto para Vehicular/SOAT, o tu perfil de riesgo (bajo/medio/alto) para fondos.');
+}
+
+function sugerirProductosPorTipo(tipo, palabraClave = '') {
+  const lista = (catalogoCache || []).filter(p => (p.tipo || '').toUpperCase() === tipo);
+  const filtrada = palabraClave
+    ? lista.filter(p => (p.nombre || '').toLowerCase().includes(palabraClave))
+    : lista;
+  const top = (filtrada.length ? filtrada : lista).slice(0, 2);
+  if (!top.length) return 'No encontré productos en el catálogo cargado.';
+  return 'Opciones recomendadas:\n' + top.map(p => `- ${p.nombre}: ${p.descripcion || ''}`).join('\n');
+}
+
+function sugerirFondosPorPerfil(perfil) {
+  const lista = (catalogoCache || []).filter(p => (p.tipo || '').toUpperCase() === 'FONDO');
+  const ordenRiesgo = perfil === 'ALTO' ? ['ALTO', 'MEDIO', 'BAJO'] : perfil === 'MEDIO' ? ['MEDIO', 'BAJO', 'ALTO'] : ['BAJO', 'MEDIO'];
+  const ordenada = lista.sort((a, b) => {
+    const ia = ordenRiesgo.indexOf((a.riesgo || 'MEDIO').toUpperCase());
+    const ib = ordenRiesgo.indexOf((b.riesgo || 'MEDIO').toUpperCase());
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+  const top = ordenada.slice(0, 3);
+  if (!top.length) return 'No encontré fondos en el catálogo cargado.';
+  const intro = perfil === 'ALTO' ? 'Perfil agresivo:'
+    : perfil === 'MEDIO' ? 'Perfil balanceado:'
+    : 'Perfil conservador:';
+  return `${intro}\n` + top.map(p => `- ${p.nombre} (${p.riesgo || 'N/A'}): ${p.descripcion || ''}`).join('\n');
+}
+
+function estimarPrimaSaludVida({ esVida, edad }) {
+  if (!edad || edad < 18 || edad > 90) return null;
+  if (esVida) {
+    if (edad <= 30) return 70;
+    if (edad <= 40) return 110;
+    if (edad <= 50) return 160;
+    if (edad <= 60) return 230;
+    return 320;
+  }
+  // Salud
+  if (edad <= 25) return 260;
+  if (edad <= 35) return 320;
+  if (edad <= 45) return 520;
+  if (edad <= 55) return 820;
+  if (edad <= 65) return 1150;
+  return 1400;
+}
+
+function estimarPrimaVehicularOsoat({ esSoat, ano, texto }) {
+  const modelos = [
+    { id: 'corolla', match: ['corolla', 'sedan'], base: esSoat ? 90 : 650 },
+    { id: 'hilux', match: ['hilux', 'pickup'], base: esSoat ? 120 : 1150 },
+    { id: 'yaris', match: ['yaris', 'hatch'], base: esSoat ? 85 : 520 },
+    { id: 'cx5', match: ['cx-5', 'cx5', 'suv'], base: esSoat ? 105 : 880 },
+    { id: 'rav4', match: ['rav4', 'rav 4'], base: esSoat ? 110 : 940 },
+  ];
+  const model = modelos.find(m => m.match.some(k => texto.includes(k)));
+  const base = model ? model.base : esSoat ? 100 : 800;
+  const year = ano && ano >= 2000 && ano <= new Date().getFullYear() + 1 ? ano : null;
+  let factor = 1;
+  if (year) {
+    if (year >= 2022) factor = 1;
+    else if (year >= 2016) factor = 1.15;
+    else if (year >= 2010) factor = 1.3;
+    else factor = 1.5;
+  }
+  const prima = base * factor;
+  const min = esSoat ? 30 : 400;
+  const max = esSoat ? 200 : 2000;
+  return Math.min(Math.max(prima, min), max);
 }
