@@ -22,9 +22,30 @@
 
   <main class="container">
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>Resumen de contratos</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Resumen de contratos</h2>
         <span id="contador-contratos" class="text-muted"></span>
+      </div>
+
+      <!-- Barra de filtros (diseño mejorado) -->
+      <div class="filters-bar">
+        <div class="filter-left">
+          <div class="filter-item filter-search">
+            <input id="filtroCliente" type="search" placeholder="Buscar cliente (nombre o email)" />
+          </div>
+          <div class="filter-item">
+            <select id="filtroTipo">
+              <option value="TODOS">Todos los tipos</option>
+              <option value="FONDO">Fondo</option>
+              <option value="SEGURO">Seguro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button id="btn-aplicar-filtros" class="btn btn-primary">🔍 Aplicar</button>
+          <button id="btn-limpiar-filtros" class="btn btn-secondary">Limpiar</button>
+        </div>
       </div>
       <div id="contratos-loading" class="loading">Cargando contratos...</div>
       <div id="contratos-error" class="error-message" style="display:none;"></div>

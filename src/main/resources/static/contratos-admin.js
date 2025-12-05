@@ -11,6 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   usuarioAdmin = JSON.parse(sesion);
   cargarContratos();
+
+  // hook up filtro controls
+  const btnAplicar = document.getElementById('btn-aplicar-filtros');
+  const btnLimpiar = document.getElementById('btn-limpiar-filtros');
+  const filtroCliente = document.getElementById('filtroCliente');
+  const filtroTipo = document.getElementById('filtroTipo');
+
+  if (btnAplicar) btnAplicar.addEventListener('click', () => cargarContratos());
+  if (btnLimpiar) btnLimpiar.addEventListener('click', () => {
+    if (filtroCliente) filtroCliente.value = '';
+    if (filtroTipo) filtroTipo.value = 'TODOS';
+    cargarContratos();
+  });
+
+  if (filtroCliente) {
+    filtroCliente.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') cargarContratos();
+    });
+  }
 });
 
 async function cargarContratos() {
@@ -24,19 +43,38 @@ async function cargarContratos() {
   try {
     const res = await axios.get(API_ADMIN_CONTRATOS);
     const contratos = res.data || [];
-    document.getElementById('contador-contratos').textContent = `${contratos.length} contratos`;
 
-    if (!contratos.length) {
+    // Read current filtros
+    const filtroTexto = (document.getElementById('filtroCliente')?.value || '').trim().toLowerCase();
+    const filtroTipoSel = (document.getElementById('filtroTipo')?.value || 'TODOS');
+
+    // Apply client-side filtering
+    const contratosFiltrados = contratos.filter(c => {
+      let okTipo = true;
+      if (filtroTipoSel && filtroTipoSel !== 'TODOS') {
+        okTipo = (String(c.tipo || '').toUpperCase() === String(filtroTipoSel).toUpperCase());
+      }
+      let okCliente = true;
+      if (filtroTexto) {
+        const nombre = String(c.usuarioNombre || '').toLowerCase();
+        const email = String(c.usuarioEmail || '').toLowerCase();
+        okCliente = nombre.includes(filtroTexto) || email.includes(filtroTexto);
+      }
+      return okTipo && okCliente;
+    });
+
+    document.getElementById('contador-contratos').textContent = `${contratosFiltrados.length} contratos`;
+
+    if (!contratosFiltrados.length) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">??</div>
           <h3>No hay contratos registrados</h3>
-          <p>Aún no hay clientes con productos contratados.</p>
+          <p>No se encontraron contratos con los filtros aplicados.</p>
         </div>`;
       return;
     }
-
-    const rows = contratos.map(contrato => `
+    const rows = contratosFiltrados.map(contrato => `
       <div class="producto-card contrato-card">
         <div class="producto-header">
           <div>

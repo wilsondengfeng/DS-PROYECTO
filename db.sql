@@ -76,11 +76,11 @@ INSERT INTO usuarios (nombre, login, clave, email, rol, saldo_sol, saldo_usd) VA
     ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN', 0.00, 0.00);
 
 INSERT INTO productos (nombre, tipo, moneda, riesgo, descripcion, beneficio, costo, plazo, activo) VALUES
-    ('IF Libre Disponibilidad Soles FMIV', 'FONDO', 'SOL', 'BAJO', 'Alternativa conservadora en soles. Invierte en renta fija.', 'Rentabilidad: 3.15% a 3.31%.', 'Moneda: Soles. Libre disponibilidad.', 'Sin plazo minimo.', TRUE),
-    ('IF Mediano Plazo Soles FMIV', 'FONDO', 'SOL', 'MEDIO', 'Alternativa moderada en soles. Invierte en bonos.', 'Rentabilidad: 5.33%.', 'Moneda: Soles. Bonos locales e internacionales.', 'Minimo 3 anos.', TRUE),
-    ('FDF IF Real Estate Student Accommodation FMIV', 'FONDO', 'USD', 'MEDIO', 'Inversion inmobiliaria en renta estudiantil global.', 'Rentabilidad: 4.83% con dividendo.', 'Moneda: Dolares. Inmuebles para estudiantes.', 'Minimo 3 anos.', TRUE),
-    ('IF Futuro Seguro Dolares FMIV', 'FONDO', 'USD', 'MEDIO', 'Alternativa moderada en dolares. Mezcla de renta fija y acciones.', 'Rentabilidad: 10.74%.', 'Moneda: Dolares. Portafolio mixto.', 'Minimo 5 anos.', TRUE),
-    ('IF Acciones FMIV', 'FONDO', 'SOL', 'ALTO', 'Alternativa audaz en soles. Invierte en acciones de bolsa peruana.', 'Rentabilidad: 20.73%.', 'Moneda: Soles. Acciones locales.', 'Minimo 5 anos.', TRUE),
+    ('Libre Disponibilidad Soles', 'FONDO', 'SOL', 'BAJO', 'Alternativa conservadora en soles. Invierte en renta fija.', 'Rentabilidad: 3.15% a 3.31%.', 'Moneda: Soles. Libre disponibilidad.', 'Sin plazo minimo.', TRUE),
+    ('Mediano Plazo Soles', 'FONDO', 'SOL', 'MEDIO', 'Alternativa moderada en soles. Invierte en bonos.', 'Rentabilidad: 5.33%.', 'Moneda: Soles. Bonos locales e internacionales.', 'Minimo 3 anos.', TRUE),
+    ('Real Estate Student Accommodation', 'FONDO', 'USD', 'MEDIO', 'Inversion inmobiliaria en renta estudiantil global.', 'Rentabilidad: 4.83% con dividendo.', 'Moneda: Dolares. Inmuebles para estudiantes.', 'Minimo 3 anos.', TRUE),
+    ('Futuro Seguro Dolares', 'FONDO', 'USD', 'MEDIO', 'Alternativa moderada en dolares. Mezcla de renta fija y acciones.', 'Rentabilidad: 10.74%.', 'Moneda: Dolares. Portafolio mixto.', 'Minimo 5 anos.', TRUE),
+    ('Acciones', 'FONDO', 'SOL', 'ALTO', 'Alternativa audaz en soles. Invierte en acciones de bolsa peruana.', 'Rentabilidad: 20.73%.', 'Moneda: Soles. Acciones locales.', 'Minimo 5 anos.', TRUE),
     ('Seguro Vehicular', 'SEGURO', 'SOL', NULL, 'Cobertura integral del vehiculo. Protege contra colisiones, robo, danos y desastres naturales. Incluye responsabilidad civil.', 'Auxiliar mecanico 24/7, remolque y taller de confianza.', 'Desde S/ 60 mensuales.', 'Poliza anual renovable.', TRUE),
     ('SOAT', 'SEGURO', 'SOL', NULL, 'Seguro obligatorio para accidentes de transito. Cubre gastos medicos de terceros.', 'Indemnizacion por gastos medicos. Atencion en emergencia.', 'Desde S/ 55 a S/ 120.', 'Vigencia anual.', TRUE),
     ('Seguro de Salud Completo', 'SEGURO', 'SOL', NULL, 'Plan integral de salud. Cobertura hospitalaria, ambulatoria, maternidad y odontologia.', 'Consultas ilimitadas. Medicinas al 100% en red. Emergencia 24/7.', 'Desde S/ 280 mensual.', 'Vigencia anual renovable.', TRUE),
