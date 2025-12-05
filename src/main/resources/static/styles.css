@@ -457,6 +457,9 @@ main.container > .cta-section {
 .feature-icon {
     font-size: 3rem;
     margin-bottom: 20px;
+    width: 96px;
+    height: 96px;
+    display: block;
 }
 
 .feature-card h3 {

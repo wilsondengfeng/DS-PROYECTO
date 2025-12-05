@@ -7,9 +7,6 @@
 
 -- Conectarse a la base de datos conglomerado_financiero antes de ejecutar el resto del script
 
--- Forzar codificacion UTF-8 para evitar caracteres corruptos
-SET client_encoding = 'UTF8';
-
 DROP TABLE IF EXISTS movimientos;
 DROP TABLE IF EXISTS solicitudes_informacion;
 DROP TABLE IF EXISTS contratos;
@@ -35,10 +32,10 @@ CREATE TABLE productos (
     moneda VARCHAR(10) NOT NULL DEFAULT 'SOL',
     riesgo VARCHAR(20),
     visitas INTEGER NOT NULL DEFAULT 0,
-    descripcion VARCHAR(500) NOT NULL,
-    beneficio VARCHAR(500),
-    costo VARCHAR(100),
-    plazo VARCHAR(100),
+    descripcion VARCHAR(1000) NOT NULL,
+    beneficio VARCHAR(1000),
+    costo VARCHAR(200),
+    plazo VARCHAR(200),
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
@@ -79,16 +76,15 @@ INSERT INTO usuarios (nombre, login, clave, email, rol, saldo_sol, saldo_usd) VA
     ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN', 0.00, 0.00);
 
 INSERT INTO productos (nombre, tipo, moneda, riesgo, descripcion, beneficio, costo, plazo, activo) VALUES
-    ('IF Libre Disponibilidad Soles FMIV', 'FONDO', 'SOL', 'BAJO', 'Es nuestra alternativa extra conservadora, en soles, que te permite disponer de tu dinero cuando quieras. Invierte unicamente en renta fija y es de riesgo muy bajo.', 'Rentabilidad nominal a octubre 2025*: Serie A 3.15%, Serie B 3.31%, Serie C 3.21%.', 'Moneda: Soles. Libre disponibilidad sin penalidad.', 'Sin plazo minimo; acceso inmediato al capital.', TRUE),
-    ('IF Mediano Plazo Soles FMIV', 'FONDO', 'SOL', 'MEDIO', 'Es nuestra alternativa moderada, en soles. Invierte en renta fija local e internacional, mayoritariamente en bonos y sin posicion en acciones.', 'Rentabilidad nominal a octubre 2025*: 5.33%. Registrate en ERNI y abrelo aqui.', 'Moneda: Soles. Portafolio de bonos locales e internacionales.', 'Mantener la inversion al menos 3 anos para buscar mejores rendimientos.', TRUE),
-    ('FDF IF Real Estate Student Accommodation FMIV', 'FONDO', 'USD', 'MEDIO', 'Es nuestra alternativa de inversion inmobiliaria enfocada en la renta estudiantil global. Busca generar ganancias por la revalorizacion de los inmuebles y los flujos constantes de renta.', 'Rentabilidad nominal a octubre 2025* (con dividendo): 4.83%. Registrate en ERNI y abrelo aqui.', 'Moneda: Dolares. Enfoque en renta estudiantil global.', 'Te sugerimos mantener la inversion al menos 3 anos.', TRUE),
-    ('IF Futuro Seguro Dolares FMIV', 'FONDO', 'USD', 'MEDIO', 'Es nuestra alternativa moderada, en dolares, que busca superar a las alternativas de jubilacion mediante una mezcla de renta fija y acciones globales.', 'Rentabilidad nominal a octubre 2025*: 10.74%. Registrate en ERNI y abrelo aqui.', 'Moneda: Dolares. Portafolio mixto orientado a jubilacion.', 'Te sugerimos mantener la inversion al menos 5 anos.', TRUE),
-    ('IF Acciones FMIV', 'FONDO', 'SOL', 'ALTO', 'Es nuestra alternativa audaz, en soles. Invierte hasta un 100% en acciones de la bolsa peruana y asume riesgo alto para buscar valorizacion.', 'Rentabilidad nominal a octubre 2025*: 20.73%. Registrate en ERNI y abrelo aqui.', 'Moneda: Soles. Exposicion total a renta variable local.', 'Mantener la inversion al menos 5 anos para buscar mayores retornos.', TRUE),
-    ('Seguro Vida Integral', 'SEGURO', 'SOL', NULL, 'Cobertura integral de vida y salud para adultos jovenes.', 'Telemedicina, asistencias y cobertura familiar.', '120', 'Contratacion anual renovable', TRUE),
-    ('Seguro Salud Familiar Plus', 'SEGURO', 'SOL', NULL, 'Cobertura hospitalaria y ambulatoria para todo el hogar.', 'Red de clinicas premium y telemedicina ilimitada.', '180', 'Contrato anual renovable', TRUE),
-    ('Seguro Auto Ejecutivo', 'SEGURO', 'SOL', NULL, 'Proteccion total para flotas de ejecutivos y gerentes.', 'Auto de reemplazo y asistencia en carretera 24/7.', '220', 'Contrato anual renovable', TRUE),
-    ('Seguro Hogar Premium', 'SEGURO', 'SOL', NULL, 'Cobertura contra incendios, robos y danos por agua.', 'Incluye asistencia de urgencia y monitoreo IoT.', '95', 'Contrato anual renovable', TRUE),
-    ('Seguro Cyber Empresas', 'SEGURO', 'SOL', NULL, 'Proteccion ante brechas de datos y ataques ransomware.', 'Respuesta forense, abogados y comunicacion de crisis.', '600', 'Contrato anual renovable', TRUE);
+    ('IF Libre Disponibilidad Soles FMIV', 'FONDO', 'SOL', 'BAJO', 'Alternativa conservadora en soles. Invierte en renta fija.', 'Rentabilidad: 3.15% a 3.31%.', 'Moneda: Soles. Libre disponibilidad.', 'Sin plazo minimo.', TRUE),
+    ('IF Mediano Plazo Soles FMIV', 'FONDO', 'SOL', 'MEDIO', 'Alternativa moderada en soles. Invierte en bonos.', 'Rentabilidad: 5.33%.', 'Moneda: Soles. Bonos locales e internacionales.', 'Minimo 3 anos.', TRUE),
+    ('FDF IF Real Estate Student Accommodation FMIV', 'FONDO', 'USD', 'MEDIO', 'Inversion inmobiliaria en renta estudiantil global.', 'Rentabilidad: 4.83% con dividendo.', 'Moneda: Dolares. Inmuebles para estudiantes.', 'Minimo 3 anos.', TRUE),
+    ('IF Futuro Seguro Dolares FMIV', 'FONDO', 'USD', 'MEDIO', 'Alternativa moderada en dolares. Mezcla de renta fija y acciones.', 'Rentabilidad: 10.74%.', 'Moneda: Dolares. Portafolio mixto.', 'Minimo 5 anos.', TRUE),
+    ('IF Acciones FMIV', 'FONDO', 'SOL', 'ALTO', 'Alternativa audaz en soles. Invierte en acciones de bolsa peruana.', 'Rentabilidad: 20.73%.', 'Moneda: Soles. Acciones locales.', 'Minimo 5 anos.', TRUE),
+    ('Seguro Vehicular', 'SEGURO', 'SOL', NULL, 'Cobertura integral del vehiculo. Protege contra colisiones, robo, danos y desastres naturales. Incluye responsabilidad civil.', 'Auxiliar mecanico 24/7, remolque y taller de confianza.', 'Desde S/ 60 mensuales.', 'Poliza anual renovable.', TRUE),
+    ('SOAT', 'SEGURO', 'SOL', NULL, 'Seguro obligatorio para accidentes de transito. Cubre gastos medicos de terceros.', 'Indemnizacion por gastos medicos. Atencion en emergencia.', 'Desde S/ 55 a S/ 120.', 'Vigencia anual.', TRUE),
+    ('Seguro de Salud Completo', 'SEGURO', 'SOL', NULL, 'Plan integral de salud. Cobertura hospitalaria, ambulatoria, maternidad y odontologia.', 'Consultas ilimitadas. Medicinas al 100% en red. Emergencia 24/7.', 'Desde S/ 280 mensual.', 'Vigencia anual renovable.', TRUE),
+    ('Seguro de Vida', 'SEGURO', 'SOL', NULL, 'Proteccion ante fallecimiento e invalidez permanente. Suma asegurada flexible.', 'Indemnizacion por muerte. Cobertura de invalidez. Asistencia funeraria.', 'Desde S/ 95 mensual.', 'Poliza flexible 5 a 30 anos.', TRUE);
 
 INSERT INTO contratos (usuario_id, producto_id, monto_invertido) VALUES
     (1, 1, 12000.00),
@@ -97,4 +93,4 @@ INSERT INTO contratos (usuario_id, producto_id, monto_invertido) VALUES
 
 INSERT INTO solicitudes_informacion (usuario_id, producto_id, mensaje) VALUES
     (1, 4, 'Quiero saber requisitos para asegurar a mi familia.'),
-    (2, 1, U&'\00BFCu\00E1l es el monto m\00EDnimo para abrir este fondo?');
+    (2, 1, 'Cual es el monto minimo para abrir este fondo?');

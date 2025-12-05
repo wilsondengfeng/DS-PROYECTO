@@ -544,8 +544,8 @@ function renderProductosContratados() {
 
         <div class="producto-actions">
           <button class="btn btn-primary" onclick="verDetalle(${prod.id})">Ver Detalles</button>
-          <button class="btn btn-warning" onclick="aumentarInversion(${prod.id})">Aumentar inversion</button>
-          <button class="btn btn-secondary" onclick="disminuirInversion(${prod.id})">Disminuir inversion</button>
+          ${tipoTexto === 'SEGURO' ? '' : `<button class="btn btn-warning" onclick="aumentarInversion(${prod.id})">Aumentar inversion</button>`}
+          ${tipoTexto === 'SEGURO' ? '' : `<button class="btn btn-secondary" onclick="disminuirInversion(${prod.id})">Disminuir inversion</button>`}
           <button class="btn btn-danger" onclick="eliminarContrato(${prod.id})">Eliminar producto</button>
         </div>
       </div>
