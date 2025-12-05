@@ -267,7 +267,7 @@ function renderResumenSeleccion() {
     `).join('');
     inputMontoHTML = `
     <div class="form-group">
-      <label for="montoInversion">?Cu?nto deseas invertir en este fondo? (${configMonto.nombreMoneda})</label>
+      <label for="montoInversion">Cuanto deseas invertir en este fondo? (${configMonto.nombreMoneda})</label>
       <input
         type="number"
         id="montoInversion"

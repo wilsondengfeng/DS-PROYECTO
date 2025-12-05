@@ -3,7 +3,7 @@
 -- ==========================
 
 -- Crear la base de datos si no existe (ejecutar como superusuario)
--- CREATE DATABASE conglomerado_financiero;
+-- CREATE DATABASE conglomerado_financiero ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C';
 
 -- Conectarse a la base de datos conglomerado_financiero antes de ejecutar el resto del script
 
@@ -76,11 +76,11 @@ INSERT INTO usuarios (nombre, login, clave, email, rol, saldo_sol, saldo_usd) VA
     ('Equipo Corporativo', 'admin', 'admin', 'admin@conglomerado.com', 'ADMIN', 0.00, 0.00);
 
 INSERT INTO productos (nombre, tipo, moneda, riesgo, descripcion, beneficio, costo, plazo, activo) VALUES
-    ('Libre Disponibilidad Soles', 'FONDO', 'SOL', 'BAJO', 'Alternativa conservadora en soles. Invierte en renta fija.', 'Rentabilidad: 3.15% a 3.31%.', 'Moneda: Soles. Libre disponibilidad.', 'Sin plazo minimo.', TRUE),
-    ('Mediano Plazo Soles', 'FONDO', 'SOL', 'MEDIO', 'Alternativa moderada en soles. Invierte en bonos.', 'Rentabilidad: 5.33%.', 'Moneda: Soles. Bonos locales e internacionales.', 'Minimo 3 anos.', TRUE),
-    ('Real Estate Student Accommodation', 'FONDO', 'USD', 'MEDIO', 'Inversion inmobiliaria en renta estudiantil global.', 'Rentabilidad: 4.83% con dividendo.', 'Moneda: Dolares. Inmuebles para estudiantes.', 'Minimo 3 anos.', TRUE),
-    ('Futuro Seguro Dolares', 'FONDO', 'USD', 'MEDIO', 'Alternativa moderada en dolares. Mezcla de renta fija y acciones.', 'Rentabilidad: 10.74%.', 'Moneda: Dolares. Portafolio mixto.', 'Minimo 5 anos.', TRUE),
-    ('Acciones', 'FONDO', 'SOL', 'ALTO', 'Alternativa audaz en soles. Invierte en acciones de bolsa peruana.', 'Rentabilidad: 20.73%.', 'Moneda: Soles. Acciones locales.', 'Minimo 5 anos.', TRUE),
+    ('FDF IF Inversion EE.UU. FMIV', 'FONDO', 'USD', 'ALTO', 'Alternativa audaz en dolares que invierte mayoritariamente en acciones de la bolsa de Estados Unidos.', 'En que invierte? Portafolio de renta variable estadounidense orientado a crecimiento.', 'Recomendado para perfiles que aceptan alta volatilidad.', 'Mantener al menos 3 anos para buscar mayores rendimientos.', TRUE),
+    ('IF Mediano Plazo Soles FMIV', 'FONDO', 'SOL', 'MEDIO', 'Alternativa moderada en soles enfocada en renta fija local e internacional.', 'Invierte en bonos y papeles de renta fija; no incluye acciones.', 'Diversificacion en instrumentos en soles.', 'Horizonte sugerido: minimo 2 anos.', TRUE),
+    ('IF Mediano Plazo FMIV', 'FONDO', 'USD', 'MEDIO', 'Alternativa moderada en dolares centrada en bonos y renta fija a nivel global.', 'Protege capital en dolares con ingresos recurrentes; sin acciones.', 'Diversificacion internacional con riesgo medio.', 'Horizonte sugerido: minimo 2 anos.', TRUE),
+    ('IF Libre Disponibilidad Soles FMIV', 'FONDO', 'SOL', 'BAJO', 'Alternativa extra-conservadora en soles que permite retirar el dinero en cualquier momento.', 'Invierte solo en depositos a plazo, bonos y otros instrumentos de renta fija.', 'Liquidez casi inmediata y riesgo muy bajo.', 'Sin plazo minimo; ideal para fondos de emergencia.', TRUE),
+    ('IF Enfoque Latam FMIV', 'FONDO', 'USD', 'ALTO', 'Alternativa audaz en dolares que invierte en bonos latinoamericanos.', 'Busca aprovechar oportunidades de renta fija regional con mayor rendimiento.', 'Portafolio dinamico con supervision activa.', 'Mantener al menos 2 anos para capitalizar el potencial.', TRUE),
     ('Seguro Vehicular', 'SEGURO', 'SOL', NULL, 'Cobertura integral del vehiculo. Protege contra colisiones, robo, danos y desastres naturales. Incluye responsabilidad civil.', 'Auxiliar mecanico 24/7, remolque y taller de confianza.', 'Desde S/ 60 mensuales.', 'Poliza anual renovable.', TRUE),
     ('SOAT', 'SEGURO', 'SOL', NULL, 'Seguro obligatorio para accidentes de transito. Cubre gastos medicos de terceros.', 'Indemnizacion por gastos medicos. Atencion en emergencia.', 'Desde S/ 55 a S/ 120.', 'Vigencia anual.', TRUE),
     ('Seguro de Salud Completo', 'SEGURO', 'SOL', NULL, 'Plan integral de salud. Cobertura hospitalaria, ambulatoria, maternidad y odontologia.', 'Consultas ilimitadas. Medicinas al 100% en red. Emergencia 24/7.', 'Desde S/ 280 mensual.', 'Vigencia anual renovable.', TRUE),

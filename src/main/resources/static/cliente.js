@@ -214,8 +214,8 @@ function cambiarPestaña(tipo, omitirCarga = false) {
   const tituloCatalogo = document.getElementById('titulo-catalogo');
   if (tituloCatalogo) {
     tituloCatalogo.textContent = tipo === 'fondos' 
-      ? '📋 Catálogo de Fondos de Inversión' 
-      : '🛡️ Catálogo de Seguros';
+      ? '📋 Catalogo de Fondos de Inversion' 
+      : '🛡️ Catalogo de Seguros';
   }
   
   // Limpiar selección de comparación al cambiar de pestaña
@@ -421,7 +421,7 @@ function contratarProducto(productoId) {
 
 async function eliminarContrato(productoId) {
   if (!usuarioActual) return;
-  const confirmar = confirm('¿Deseas eliminar este producto contratado?');
+  const confirmar = confirm('Deseas eliminar este producto contratado?');
   if (!confirmar) return;
   try {
     await axios.delete(`${API_CONTRATOS(usuarioActual.id)}/${productoId}`);
