@@ -1081,6 +1081,28 @@ main.container > .cta-section {
     min-width: 120px;
 }
 
+/* Ensure action buttons have consistent height and centered content */
+.producto-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 18px;
+    min-height: 56px;
+    text-align: center;
+    white-space: normal;
+}
+
+/* Make product card a vertical flex container so actions can stick to bottom */
+.producto-card {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Push actions to the bottom of the card */
+.producto-actions {
+    margin-top: auto;
+}
+
 /* ===== DETALLE PRODUCTO ===== */
 .producto-detalle-info {
     margin-top: 20px;
