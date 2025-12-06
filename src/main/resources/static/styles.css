@@ -522,6 +522,9 @@ main.container > .cta-section {
     border-radius: var(--radius-lg);
     padding: 40px 30px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-sm);
 }
@@ -538,6 +541,8 @@ main.container > .cta-section {
     width: 96px;
     height: 96px;
     display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .feature-card h3 {
@@ -1720,12 +1725,12 @@ main.container > .cta-section {
 
 .chatbot-panel {
     display: none;
-    width: min(360px, 90vw);
-    height: 420px;
+    width: min(430px, 94vw);
+    height: 540px;
     background: #111827;
     color: #f9fafb;
     border-radius: 12px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.38);
     overflow: hidden;
 }
 

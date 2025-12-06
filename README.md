@@ -1,22 +1,37 @@
-# PROYECTO DISEÑO DE SOFTWARE
+# Proyecto DiseÃ±o de Software
 
-Aplicación desarrollada con Spring Boot (backend) y HTML/JS (frontend).
+Aplicacion full-stack con Spring Boot (Java 17) y frontend HTML/JS/CSS.
 
-## Requisitos
-- JDK 17+
+## Prerrequisitos
+- Java 17+
 - Maven 3.9+
-- PostgreSQL
+- Docker + Docker Compose 
 
-## Ejecutar
-1. Configura PostgreSQL y credenciales en src/main/resources/application.properties.
-2. (Opcional) carga datos desde db.sql.
-3. Ejecuta: mvn spring-boot:run.
-4. Abre src/main/resources/static/index.html.
+## Configuracion
+- Base de datos: Postgres (ver `src/main/resources/application-postgres.properties`).
+- Seed opcional: `db.sql`.
+- Clave OpenAI: variable de entorno `OPENAI_API_KEY`.
 
-## Estructura
-- src/main/java código backend
-- src/main/resources/static HTML/JS/CSS
-- db.sql script de base de datos
+## Ejecutar (Docker)
+1. Exporta la clave: `$env:OPENAI_API_KEY="tu_clave"` (PowerShell) o usa `.env` con `OPENAI_API_KEY=tu_clave`.
+2. Levanta: `docker compose up --build -d`.
+3. App en `http://localhost:8081`.
 
-## Licencia
-Privado para curso UTEC.
+## Ejecutar (local)
+1. Configura Postgres y credenciales en `application-postgres.properties` o `application.properties`.
+2. (Opcional) importa `db.sql`.
+3. `mvn spring-boot:run` (perfil activo por defecto: `postgres`).
+
+## Endpoints clave
+- Backend: `src/main/java/com/example/app`.
+- Chatbot: `POST /api/chatbot` (usa `OPENAI_API_KEY`).
+- Frontend: `src/main/resources/static` (`index.html`, `cliente.html`, etc.).
+
+## Scripts utiles
+- Compilar sin tests: `mvn -q -DskipTests compile`.
+- Paquete: `mvn -q -DskipTests package`.
+- Logs contenedor app: `docker compose logs -f app`.
+
+## Notas
+- Usa ASCII en textos para evitar problemas de codificacion en el UI.
+- No commitear claves; usa variables de entorno.

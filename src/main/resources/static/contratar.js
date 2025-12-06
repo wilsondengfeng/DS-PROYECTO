@@ -77,8 +77,20 @@ const CONFIG_SEGUROS_DINAMICOS = {
       { id: 'cx5', nombre: 'Mazda CX-5 / SUV', base: 880 },
       { id: 'rav4', nombre: 'Toyota RAV4 / SUV', base: 940 },
       { id: 'accent', nombre: 'Hyundai Accent / Sedan', base: 560 },
-      { id: 'tiggo', nombre: 'Chery Tiggo 4 / SUV', base: 780 },
-      { id: 'xtrail', nombre: 'Nissan X-Trail / SUV', base: 890 }
+      { id: 'tiggo4', nombre: 'Chery Tiggo 4 / SUV', base: 780 },
+      { id: 'xtrail', nombre: 'Nissan X-Trail / SUV', base: 890 },
+      { id: 'civic', nombre: 'Honda Civic / Sedan', base: 670 },
+      { id: 'crv', nombre: 'Honda CR-V / SUV', base: 920 },
+      { id: 'l200', nombre: 'Mitsubishi L200 / Pick-up', base: 1180 },
+      { id: 'ranger', nombre: 'Ford Ranger / Pick-up', base: 1210 },
+      { id: 'kicks', nombre: 'Nissan Kicks / SUV', base: 760 },
+      { id: 'tracker', nombre: 'Chevrolet Tracker / SUV', base: 740 },
+      { id: 'tucson', nombre: 'Hyundai Tucson / SUV', base: 870 },
+      { id: 'sportage', nombre: 'Kia Sportage / SUV', base: 880 },
+      { id: 'compass', nombre: 'Jeep Compass / SUV', base: 990 },
+      { id: 'creta', nombre: 'Hyundai Creta / SUV', base: 710 },
+      { id: 'swift', nombre: 'Suzuki Swift / Hatchback', base: 520 },
+      { id: 'jimny', nombre: 'Suzuki Jimny / 4x4', base: 830 }
     ]
   },
   soat: {
@@ -91,10 +103,26 @@ const CONFIG_SEGUROS_DINAMICOS = {
     calculo: 'auto',
     modelos: [
       { id: 'moto', nombre: 'Moto 150-300cc', base: 60 },
-      { id: 'sedan', nombre: 'Auto Sedan', base: 90 },
-      { id: 'suv', nombre: 'SUV / Crossover', base: 105 },
-      { id: 'pickup', nombre: 'Pick-up', base: 120 },
-      { id: 'van', nombre: 'Van / Minivan', base: 130 }
+      { id: 'corolla', nombre: 'Toyota Corolla / Sedan', base: 90 },
+      { id: 'hilux', nombre: 'Toyota Hilux / Pick-up', base: 140 },
+      { id: 'yaris', nombre: 'Toyota Yaris / Hatchback', base: 85 },
+      { id: 'cx5', nombre: 'Mazda CX-5 / SUV', base: 120 },
+      { id: 'rav4', nombre: 'Toyota RAV4 / SUV', base: 125 },
+      { id: 'accent', nombre: 'Hyundai Accent / Sedan', base: 95 },
+      { id: 'tiggo4', nombre: 'Chery Tiggo 4 / SUV', base: 110 },
+      { id: 'xtrail', nombre: 'Nissan X-Trail / SUV', base: 120 },
+      { id: 'civic', nombre: 'Honda Civic / Sedan', base: 100 },
+      { id: 'crv', nombre: 'Honda CR-V / SUV', base: 125 },
+      { id: 'l200', nombre: 'Mitsubishi L200 / Pick-up', base: 150 },
+      { id: 'ranger', nombre: 'Ford Ranger / Pick-up', base: 150 },
+      { id: 'kicks', nombre: 'Nissan Kicks / SUV', base: 105 },
+      { id: 'tracker', nombre: 'Chevrolet Tracker / SUV', base: 105 },
+      { id: 'tucson', nombre: 'Hyundai Tucson / SUV', base: 120 },
+      { id: 'sportage', nombre: 'Kia Sportage / SUV', base: 120 },
+      { id: 'compass', nombre: 'Jeep Compass / SUV', base: 135 },
+      { id: 'creta', nombre: 'Hyundai Creta / SUV', base: 100 },
+      { id: 'swift', nombre: 'Suzuki Swift / Hatchback', base: 85 },
+      { id: 'jimny', nombre: 'Suzuki Jimny / 4x4', base: 120 }
     ]
   }
 };
@@ -254,7 +282,7 @@ function renderResumenSeleccion() {
   
   if (esSeguro && requiereCotizacionSeguro) {
     inputMontoHTML = construirCotizadorSeguro(configSeguroDinamico, configMonto.simbolo);
-    premiasInfo = `<p class="alert alert-info">Calcula la prima seg?n tu edad y plan antes de confirmar.</p>`;
+    premiasInfo = `<p class="alert alert-info">Calcula la prima segun tu edad y plan antes de confirmar.</p>`;
   } else if (esSeguro) {
     const primiaStr = (productoSeleccionado.costo || '').trim();
     const prima = parseFloat(primiaStr);
@@ -286,14 +314,14 @@ function renderResumenSeleccion() {
     <h3>${escapeHtml(productoSeleccionado.nombre)}</h3>
     <p><strong>Tipo:</strong> ${productoSeleccionado.tipo}</p>
     ${productoSeleccionado.tipo === 'FONDO' ? `<p><strong>Riesgo:</strong> ${escapeHtml(productoSeleccionado.riesgo || 'Sin definir')}</p>` : ''}
-    <p><strong>Descripci?n:</strong> ${escapeHtml(productoSeleccionado.descripcion || 'Sin descripci?n')}</p>
+    <p><strong>Descripcion:</strong> ${escapeHtml(productoSeleccionado.descripcion || 'Sin descripcion')}</p>
     ${esSeguro ? premiasInfo : `<p><strong>Costo:</strong> ${escapeHtml(productoSeleccionado.costo || 'No especificado')}</p>`}
     <p><strong>Moneda:</strong> ${productoSeleccionado.moneda || (configMonto.simbolo === '$' ? 'USD' : 'SOL')}</p>
     <p><strong>Beneficio:</strong> ${escapeHtml(productoSeleccionado.beneficio || 'No especificado')}</p>
     <p><strong>Plazo:</strong> ${escapeHtml(productoSeleccionado.plazo || 'No especificado')}</p>
     ${inputMontoHTML}
     <div class="detalle-actions">
-      <button class="btn btn-success" onclick="confirmarContratacion()">Confirmar contratación</button>
+      <button class="btn btn-success" onclick="confirmarContratacion()">Confirmar contratacion</button>
       <a class="btn btn-secondary" href="cliente.html">Cancelar</a>
     </div>
   `;

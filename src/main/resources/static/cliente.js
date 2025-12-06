@@ -10,6 +10,7 @@ const API_PRODUCTOS = `${API_BASE}/api/clientes/productos`;
 const API_CONTRATOS = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/contratos`;
 const API_SOLICITUDES = (clienteId) => `${API_BASE}/api/clientes/${clienteId}/solicitudes`;
 const API_SALDO_BASE = (clienteId) => `${API_BASE}/api/usuarios/${clienteId}`;
+const API_CHATBOT = `${API_BASE}/api/chatbot`;
 
 const MONEDAS = {
   SOL: { simbolo: 'S/', nombre: 'soles' },
@@ -609,8 +610,12 @@ function formatearMontoContratado(monto, referenciaMoneda = '') {
 
 function escapeHtml(text) {
     if (!text) return '';
+    const sanitized = text
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = sanitized;
     return div.innerHTML;
 }
 
@@ -893,7 +898,7 @@ function inicializarChatbot() {
   };
 
   const saludar = () => {
-    enviar('Hola, soy tu asesor virtual. Puedo sugerir fondos/seguros y estimar primas de Vida, Salud, Vehicular o SOAT. Cuéntame tu edad, perfil (bajo/medio/alto) o modelo/año del auto.');
+    enviar('Hola, soy tu asesor virtual Wilson. Te ayudo a sugerir fondos/seguros y estimar primas de Vida, Salud, Vehicular o SOAT. Cuéntame tu edad, perfil (bajo/medio/alto) o modelo/año del auto.');
   };
 
   toggle.addEventListener('click', () => {
@@ -905,17 +910,33 @@ function inicializarChatbot() {
   });
   closeBtn?.addEventListener('click', () => panel.classList.remove('open'));
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const texto = input.value.trim();
     if (!texto) return;
     enviar(texto, 'user');
     input.value = '';
-    procesarChatbot(texto, enviar);
+    await procesarChatbot(texto, enviar);
   });
 }
 
-function procesarChatbot(texto, enviar) {
+async function procesarChatbot(texto, enviar) {
+  const fallback = generarRespuestaLocal(texto);
+  try {
+    const res = await axios.post(API_CHATBOT, {
+      mensaje: texto,
+      usuarioId: usuarioActual?.id
+    });
+    const respuesta = (res.data?.respuesta || '').toString().trim();
+    enviar(respuesta || fallback, 'bot');
+  } catch (error) {
+    console.error('Error al contactar al chatbot backend:', error);
+    const detalle = error.response?.data?.mensaje || error.message || 'No pude conectar con el asistente.';
+    enviar(`${detalle} Intento ayudarte igual:\n${fallback}`, 'bot');
+  }
+}
+
+function generarRespuestaLocal(texto) {
   const lower = texto.toLowerCase();
 
   // Detectar edad y modelo/año básico
@@ -938,8 +959,7 @@ function procesarChatbot(texto, enviar) {
       : `${nombre} estimado: S/ 30 - 200 (SOAT) o S/ 400 - 2,000 (Vehicular) según modelo y año.`;
     const detalle = ano ? `Año ${ano}.` : 'Agrega modelo y año (ej: Corolla 2019) para mayor precisión.';
     const recomendacion = sugerirProductosPorTipo('SEGURO', esSoat ? 'soat' : 'vehicular');
-    enviar(`${baseMsg} ${detalle}\n${recomendacion}`);
-    return;
+    return `${baseMsg} ${detalle}\n${recomendacion}`;
   }
 
   if (esSalud || esVida) {
@@ -949,19 +969,17 @@ function procesarChatbot(texto, enviar) {
       ? `${nombre} estimado: S/ ${prima.toFixed(2)} al mes.`
       : `${nombre} típico: Vida S/ 50-500 según edad; Salud S/ 200-1500 según edad/plan.`;
     const recomendacion = sugerirProductosPorTipo('SEGURO', esVida ? 'vida' : 'salud');
-    enviar(`${baseMsg}\n${recomendacion}`);
-    return;
+    return `${baseMsg}\n${recomendacion}`;
   }
 
   // Fondos por perfil
   if (perfil) {
     const recomendacion = sugerirFondosPorPerfil(perfil);
-    enviar(recomendacion);
-    return;
+    return recomendacion;
   }
 
   // fallback general
-  enviar('Puedo ayudarte si me dices: tu edad y si buscas Vida/Salud, o el modelo/año de tu auto para Vehicular/SOAT, o tu perfil de riesgo (bajo/medio/alto) para fondos.');
+  return 'Puedo ayudarte si me dices: tu edad y si buscas Vida/Salud, o el modelo/año de tu auto para Vehicular/SOAT, o tu perfil de riesgo (bajo/medio/alto) para fondos.';
 }
 
 function sugerirProductosPorTipo(tipo, palabraClave = '') {
